@@ -1,0 +1,4 @@
+﻿cl : командная строка warning D9025: переопределение "/openmp" на "/openmp:llvm"
+  sort.cpp
+C:\Users\Пользователь\Desktop\work\OC\sort\sort\sort.cpp(20,16): warning C4018: >=: несоответствие типов со знаком и без знака
+  sort.vcxproj -> C:\Users\Пользователь\Desktop\work\OC\sort\x64\Debug\sort.exe
