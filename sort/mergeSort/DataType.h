@@ -1,4 +1,4 @@
-
+#include <immintrin.h>
 struct TASK {
 	int low;
 	int high;
@@ -11,3 +11,5 @@ struct ComplexNumber {
 	float Im;
 	float sumOfSquare = -1;
 };
+
+void abs(float* re, float* im, float* res);
