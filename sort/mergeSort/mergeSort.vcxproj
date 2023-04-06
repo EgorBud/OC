@@ -132,10 +132,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DataTypecpp.cpp" />
+    <ClCompile Include="DataType.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="merge_sort.h" />
-    <ClCompile Include="merge_sort.cpp" />
+    <ClCompile Include="MergeSort.h" />
+    <ClCompile Include="MergeSort.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataType.h" />
