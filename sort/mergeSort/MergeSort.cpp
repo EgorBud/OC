@@ -198,24 +198,37 @@ bool MergeSort::testArrayIsInOrder() {
 }
 
 void MergeSort::mergeSortTest() {
-	for (int i = 0; i < 3 * maxThreads; ++i) {
+	int n = 3 * maxThreads;
+	for (int i = 1; i <= n; ++i) {
+		maxThreads = i;
+		lengthPerThread = length / maxThreads;
+		offset = length % maxThreads;
+
 		std::thread* threads = new std::thread[maxThreads];
 
+		std::cout << i << ", ";
 		auto begin = std::chrono::system_clock::now();
 
-		for (int i = 0; i < maxThreads; ++i) {
-			threads[i] = std::thread(&MergeSort::mergeSortThread, this, (void*)i);
+		for (int j = 0; j < maxThreads; ++j) {
+			threads[j] = std::thread(&MergeSort::mergeSortThread, this, (void*)j);
 		}
 
-		for (int i = 0; i < maxThreads; ++i) {
-			threads[i].join();
+		for (int j = 0; j < maxThreads; ++j) {
+			threads[j].join();
 		}
 
-		mergeSectionOfArray(maxThreads, 1);
+		//mergeSectionOfArray(maxThreads, 1);
+
+		for (int j = 1; j < maxThreads; ++j) {
+			int mid = j * lengthPerThread - 1;
+			int hight = (j + 1) * lengthPerThread - 1;
+			merge(0, mid, hight);
+		}
+		merge(0, lengthPerThread * maxThreads - 1, length - 1);
 
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> time = end - begin;
-		std::cout << std::setw(10) << time.count() << "\t";
+		std::cout << time.count() << "\t";
 
 		if (testArrayIsInOrder()) {
 			std::cout << "Sorted" << std::endl;
