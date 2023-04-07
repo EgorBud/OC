@@ -18,13 +18,13 @@
     <ClCompile Include="main.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="merge_sort.cpp">
+    <ClCompile Include="MergeSort.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="merge_sort.h">
+    <ClCompile Include="MergeSort.h">
       <Filter>Файлы заголовков</Filter>
     </ClCompile>
-    <ClCompile Include="DataTypecpp.cpp">
+    <ClCompile Include="DataType.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>

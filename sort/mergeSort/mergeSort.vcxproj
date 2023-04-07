@@ -123,6 +123,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <AdditionalOptions>-march=native %(AdditionalOptions)</AdditionalOptions>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,10 +133,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DataTypecpp.cpp" />
+    <ClCompile Include="DataType.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="merge_sort.h" />
-    <ClCompile Include="merge_sort.cpp" />
+    <ClCompile Include="MergeSort.h" />
+    <ClCompile Include="MergeSort.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataType.h" />
