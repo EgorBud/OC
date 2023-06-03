@@ -14,6 +14,11 @@ MergeSort::MergeSort(int maxThreads, int length) {
 	re = new float[length];
 	im = new float[length];
 	abs = new float[length];
+
+	// test parallel merg
+	firstArray = new float[length];
+	secondArray = new float[length];
+
 	fillUpRandomly();
 }
 
@@ -32,6 +37,10 @@ void MergeSort::fillUpRandomly() {
 		re[i] = generateRandomNumbers(1, 100);
 		im[i] = generateRandomNumbers(1, 100);
 		abs[i] = -1;
+
+		// test parallel merg
+		firstArray[i] = generateRandomNumbers(1, 50);
+		secondArray[i] = generateRandomNumbers(1, 50);
 	}
 }
 
@@ -155,6 +164,7 @@ void MergeSort::mergeSort(int low, int high) {
 }
 
 void* MergeSort::mergeSortThread(void* arg) {
+
 	int thread_id = (long)arg;
 	int low = thread_id * lengthPerThread;
 	int high = (thread_id + 1) * lengthPerThread - 1;
@@ -170,6 +180,8 @@ void* MergeSort::mergeSortThread(void* arg) {
 		mergeSort(mid + 1, high);
 		merge(low, mid, high);
 	}
+
+
 	return nullptr;
 }
 
@@ -200,6 +212,7 @@ bool MergeSort::testArrayIsInOrder() {
 void MergeSort::mergeSortTest() {
 	int n = 3 * maxThreads;
 	for (int i = 1; i <= n; ++i) {
+		fillUpRandomly();
 		maxThreads = i;
 		lengthPerThread = length / maxThreads;
 		offset = length % maxThreads;
@@ -217,17 +230,21 @@ void MergeSort::mergeSortTest() {
 			threads[j].join();
 		}
 
-		//mergeSectionOfArray(maxThreads, 1);
+		// до слияния
+		auto endThreads = std::chrono::system_clock::now();
 
 		for (int j = 1; j < maxThreads; ++j) {
 			int mid = j * lengthPerThread - 1;
 			int hight = (j + 1) * lengthPerThread - 1;
 			merge(0, mid, hight);
 		}
-		merge(0, lengthPerThread * maxThreads - 1, length - 1);
+		if (i != 1)
+			merge(0, lengthPerThread * maxThreads - 1, length - 1);
 
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> time = end - begin;
+		std::chrono::duration<double> withoutMerging = endThreads - begin;
+		std::cout << withoutMerging.count() << "\t";
 		std::cout << time.count() << "\t";
 
 		if (testArrayIsInOrder()) {
@@ -238,4 +255,48 @@ void MergeSort::mergeSortTest() {
 		}
 		delete []threads;
 	}
+}
+
+
+// test parallel merg
+void MergeSort::mergeParallel() {
+	float* resultArray = new float[2 * length];
+
+	int k = 0;
+	for (int i = 0; i < length; ++i) {
+		resultArray[k++] = firstArray[i];
+	}
+	for (int i = 0; i < length; ++i) {
+		resultArray[k++] = secondArray[i];
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	for (int i = 0; i < length; ++i) {
+		std::cout << firstArray[i] << " ";
+	}
+	std::cout << std::endl;
+
+	for (int i = 0; i < length; ++i) {
+		std::cout << secondArray[i] << " ";
+	}
+	std::cout << std::endl;
+
+	for (int i = 0; i < 2 * length; ++i) {
+		std::cout << resultArray[i] << " ";
+	}
+	std::cout << std::endl;
+
+	delete []resultArray;
 }

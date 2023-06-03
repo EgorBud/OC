@@ -7,7 +7,9 @@
 
 int main() {
 	srand(clock());
-	MergeSort mergeSort(12, 100000000);
+	MergeSort mergeSort(16, 40000000);
+
+
 	mergeSort.mergeSortTest();
 	return 0;
 }
