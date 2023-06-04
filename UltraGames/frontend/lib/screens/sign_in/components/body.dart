@@ -9,6 +9,7 @@ import 'package:frontend/globals.dart' as globals;
 
 import 'package:frontend/screens/home/home.dart';
 import 'package:frontend/screens/register/register.dart';
+import 'package:frontend/screens/sign_in/components/sign_form.dart';
 
 class Body extends StatefulWidget {
   const Body({super.key});
@@ -18,13 +19,25 @@ class Body extends StatefulWidget {
 }
 
 class _BodyState extends State<Body> {
-
   Future<void> setConnection() async {
     globals.socket = await Socket.connect(HOST, PORT);
+    print("${globals.socket.remoteAddress}:${globals.socket.port}");
 
     globals.socket.listen((Uint8List data) {
       final serverResponse = jsonDecode(String.fromCharCodes(data));
+
       print(serverResponse["task"]);
+      if (serverResponse["task"] == "error") {
+        print(serverResponse["show"]);
+        globals.isExist = false;
+      } else if (serverResponse["state"] == 1) {
+        print(serverResponse["state"]);
+        globals.isExist = true;
+      } else {
+        print("smth else");
+        print(serverResponse);
+        globals.isExist = false;
+      }
     }, onError: (error) {
       print(error);
       globals.socket.destroy();
@@ -54,6 +67,8 @@ class _BodyState extends State<Body> {
                     fontSize: 30,
                     fontWeight: FontWeight.bold),
               ),
+
+              /*
               const SizedBox(height: 30),
               Form(
                 child: Column(
@@ -116,18 +131,17 @@ class _BodyState extends State<Body> {
                 padding: const EdgeInsets.only(top: 8, bottom: 24),
                 child: ElevatedButton.icon(
                   onPressed: () async {
-                    print("${globals.socket.remoteAddress}:${globals.socket.port}");
-
                     dynamic m = {
-                      "task": "new",
+                      "task": "load",
                       "log": "man",
                       "pas": "123",
                       "key":'key'
                     };
 
                     globals.socket.write(jsonEncode(m));
-
-                    //Navigator.pushNamed(context, HomeScreen.routeName);
+                    if (validate) {
+                      Navigator.pushNamed(context, HomeScreen.routeName);
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blueAccent,
@@ -139,6 +153,11 @@ class _BodyState extends State<Body> {
                 ),
               ),
               const SizedBox(height: 30),
+
+               */
+
+              SizedBox(height: 20),
+              SignForm(),
               GestureDetector(
                 onTap: () => Navigator.pushNamedAndRemoveUntil(
                     context, RegisterScreen.routeName, (route) => false),
