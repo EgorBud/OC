@@ -13,6 +13,10 @@ private:
 	int length;
 	int lengthPerThread;
 	int offset;
+	float efftime;
+	// test parallel merg
+	float *firstArray;
+	float *secondArray;
 
 public:
 	MergeSort(int, int);
@@ -31,5 +35,8 @@ public:
 	void mergeSectionOfArray(int, int);
 	bool testArrayIsInOrder();
 	void mergeSortTest();
+
+	// test parallel merg
+	void mergeParallel();
 };
 
