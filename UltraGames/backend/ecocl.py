@@ -14,16 +14,49 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             if (data["task"] == ("game")):
                 print("change board and let next move")
                 print(data["move"])
-            if (data["task"] == ("end")):
+            if (data["task"] == ("show")):
                 print("result:")
                 print(data["result"])
+                if(data["result"]==1):
+                    m = {"task": "add", "log": user[0]}
+                    data1 = json.dumps(m)
+                    s.sendall((bytes(data1, encoding="utf-8")))
+                    data1 = json.loads(s.recv(1024).decode('utf8'))
+                    print(data1)
+                else:
+                    m = {"task": "loh", "log": user[0]}
+                    data1 = json.dumps(m)
+                    s.sendall((bytes(data1, encoding="utf-8")))
+                    print(data1)
+
+            if (data["task"] == ("end")):
                 break
             if not data:
                 break
     s.connect((HOST, PORT))
     data = s.recv(1024).decode('utf8')
-    i=0
+    i=0#log in or new user
+
+    if(i==1):
+        i = 0
+        while(i!=1):
+
+            #newuser
+            login="man4"
+            password="123"
+            #login=input()
+            #password=input()
+            m = {"task": "new", "log": login, "pas": password}
+            data = json.dumps(m)
+            s.sendall((bytes(data, encoding="utf-8")))
+            data = json.loads(s.recv(1024).decode('utf8'))
+            print(data)
+            i=data["state"]
+            if(i!=1):
+                print(i)
+
     while(i!=1):
+        #olduser
         login="man"
         password="123"
         #login=input()
@@ -37,9 +70,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             print(i)
     user = data["user"]
     print(user)
-    #g=input()
-    g='r'
-    if(g=="t"):
+    #game=input()
+    game='t'
+    if(game=="t"):
         #key=input()
         key="any"
         m = {"task": "ticroom", "key":key}
@@ -54,21 +87,27 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         potok = threading.Thread(target=read)
         print(22)
         potok.start()
-
+        i=3
         while(potok.is_alive()):
             g=input()
             if(g != '1'):
+                if (g == '0'):
+                    m = {"task": "end"}
+                    data = json.dumps(m)
+                    s.sendall((bytes(data, encoding="utf-8")))
                 mes=g
                 m = {"task": "chat", "show": mes}
                 data = json.dumps(m)
                 s.sendall((bytes(data, encoding="utf-8")))
             else:
                 print("turn")
+
                 t=input()
+
                 m = {"task": "game", "choise": t}
                 data = json.dumps(m)
                 s.sendall((bytes(data, encoding="utf-8")))
-    if (g == "r"):
+    if (game == "r"):
         # key=input()
         key = "any"
         m = {"task": "rpcroom", "key": key}
@@ -83,23 +122,25 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         potok = threading.Thread(target=read)
         print(22)
         potok.start()
-        t = input()
+        t=2
+        #t = input()
         m = {"task": "game", "choise": t}
         data = json.dumps(m)
         s.sendall((bytes(data, encoding="utf-8")))
         while (potok.is_alive()):
 
             g = input()
+            if(g=='0'):
+                m = {"task": "end"}
+                data = json.dumps(m)
+                s.sendall((bytes(data, encoding="utf-8")))
+
             mes = g
             m = {"task": "chat", "show": mes}
             data = json.dumps(m)
             s.sendall((bytes(data, encoding="utf-8")))
 
     s.close()
-
-
-
-
 
 
 '''
