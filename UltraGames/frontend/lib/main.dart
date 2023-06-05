@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'package:socket_io_client/socket_io_client.dart';
+
 import 'package:flutter/material.dart';
 import 'package:frontend/routes.dart';
 import 'package:frontend/screens/sign_in/sign_in.dart';

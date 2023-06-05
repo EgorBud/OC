@@ -6,4 +6,4 @@ EXPOSE 3003
 
 COPY . .
 
-CMD ["python", "server.py"]
+CMD ["python", "serv.py"]

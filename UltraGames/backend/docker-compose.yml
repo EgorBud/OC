@@ -4,7 +4,7 @@ services:
   server:
     build: .
     ports: 
-      - 3003:3003
+      - 6666:6666
     volumes:
       - db-data:/db
       
