@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:frontend/constants.dart';
 import 'package:frontend/screens/home/home.dart';
 
 import 'package:frontend/globals.dart' as globals;
+import 'package:http/http.dart' as http;
 
 class SignForm extends StatefulWidget {
   const SignForm({super.key});
@@ -28,9 +30,9 @@ class _SignFormState extends State<SignForm> {
       child: Column(
         children: [
           buildLoginFormField(),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           buildPasswordFormField(),
-          SizedBox(height: 30),
+          const SizedBox(height: 30),
           FormError(errors: errors),
           const SizedBox(height: 30),
           Padding(
@@ -40,21 +42,29 @@ class _SignFormState extends State<SignForm> {
                 if (_formKey.currentState!.validate()) {
                   _formKey.currentState!.save();
 
-                  dynamic m = {
-                    "task": "load",
-                    "log": login,
-                    "pas": password,
-                    "key":'key'
-                  };
-
-                  globals.socket.write(jsonEncode(m));
-
-                  if (globals.isExist) {
-                    print(globals.isExist);
+                  print(login);
+                  print(password);
+                  var data = jsonEncode({
+                    "login": login,
+                    "password": password,
+                  });
+                  final response = await http.post(
+                      Uri.parse('http://$hostAndPort/login'),
+                      headers: <String, String>{
+                        'Content-Type': 'text/plain',
+                      },
+                      body: data
+                  );
+                  int status = response.statusCode;
+                  dynamic responseBody = jsonDecode(response.body);
+                  print(response.statusCode);
+                  print(jsonDecode(response.body));
+                  if (status == 200) {
                     Navigator.pushNamed(context, HomeScreen.routeName);
-                  } else {
-                    print("no");
+                  } else if (status == 403) {
+
                   }
+
                   //Navigator.pushNamed(context, HomeScreen.routeName);
                 }
               },

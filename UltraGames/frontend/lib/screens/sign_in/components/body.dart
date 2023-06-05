@@ -19,36 +19,9 @@ class Body extends StatefulWidget {
 }
 
 class _BodyState extends State<Body> {
-  Future<void> setConnection() async {
-    globals.socket = await Socket.connect(HOST, PORT);
-    print("${globals.socket.remoteAddress}:${globals.socket.port}");
-
-    globals.socket.listen((Uint8List data) {
-      final serverResponse = jsonDecode(String.fromCharCodes(data));
-
-      print(serverResponse["task"]);
-      if (serverResponse["task"] == "error") {
-        print(serverResponse["show"]);
-        globals.isExist = false;
-      } else if (serverResponse["state"] == 1) {
-        print(serverResponse["state"]);
-        globals.isExist = true;
-      } else {
-        print("smth else");
-        print(serverResponse);
-        globals.isExist = false;
-      }
-    }, onError: (error) {
-      print(error);
-      globals.socket.destroy();
-    }, onDone: () {
-      print("Client: Server left");
-    });
-  }
 
   @override
   void initState() {
-    setConnection();
     super.initState();
   }
 

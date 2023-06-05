@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  server:
+    build: .
+    ports: 
+      - 3003:3003
+    volumes:
+      - db-data:/db
+      
+volumes:
+  db-data:

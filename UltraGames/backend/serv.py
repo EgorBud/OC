@@ -6,7 +6,7 @@ import asyncio
 HOST='0.0.0.0'
 PORT =3003
 
-con = sl.connect('users.sql')
+con = sl.connect('./db/users.sql')
 cursor = con.cursor()
 rpcwaiters= {'dict': socket}
 
@@ -80,12 +80,9 @@ async def chat(conn1, conn2):
         if(data['task']==('chat')):
             await loop.sock_sendall(conn2, str.encode(str(json.dumps(data))))
             await loop.sock_sendall(conn1, str.encode(json.dumps({"task": 'get', 'show': 'messege recived'})))
-<<<<<<< HEAD
-=======
         if(data['task']==('end')):
             await loop.sock_sendall(conn1, str.encode(json.dumps({"task": 'end', 'show': 'exit from game'})))
             await loop.sock_sendall(conn2, str.encode(json.dumps({"task": 'end', 'show': 'exit from game'})))
->>>>>>> a309de28812aa92e4fbcb3007b1abcd5b848faa3
         if not data:
             break
         print(data['show'])
@@ -150,12 +147,6 @@ async def tictactoe(conn1, conn2):
     m2 = {"task": 'end', "result": -res}
     await loop.sock_sendall(conn1, str.encode((str(json.dumps(m2)))))
     await loop.sock_sendall(conn2, str.encode(str(json.dumps(m1))))
-<<<<<<< HEAD
-async def new(conn, json):
-    loop = asyncio.get_event_loop()
-    passw=json['pas']
-    log=json['log']
-=======
     data1 = json.loads((await loop.sock_recv(conn1, 1024)).decode('utf8'))
     data2 = json.loads((await loop.sock_recv(conn2, 1024)).decode('utf8'))
     print(data2)
@@ -165,27 +156,18 @@ async def new(conn, json):
     if(data1["task"]=="add"):
         await tpoints(conn1, data1["log"])
     await asyncio.gather(chat(conn1, conn2), chat(conn2, conn1))
+    
 async def new(conn, data):
     loop = asyncio.get_event_loop()
     passw=data['pas']
     log=data['log']
 
->>>>>>> a309de28812aa92e4fbcb3007b1abcd5b848faa3
     sql = 'INSERT INTO users ( login,    password, tscore,   rpsscore ) values(?, ?, ?, ?)'
     data = [
         (log, passw, 0, 0)
 
     ]
     with con:
-<<<<<<< HEAD
-        con.executemany(sql, data)
-    await loop.sock_sendall(conn, bytes(json.dumps((log, passw, 0, 0)), encoding="utf-8"))
-def tpoints(conn, data):
-    loop = asyncio.get_event_loop()
-    log = data['log']
-    cursor.execute("SELECT login,    password, tscore,  rpsscore  FROM users WHERE login=?", [(log)])
-    temp = (cursor.fetchone())
-=======
         try:
             con.execute(sql, data)
         except Exception as e:
@@ -232,7 +214,6 @@ async def rpcpoints(conn, log):
         return None
     await loop.sock_sendall(conn, bytes(json.dumps({"state": 1, 'newscore': temp}), encoding="utf-8"))
 
->>>>>>> a309de28812aa92e4fbcb3007b1abcd5b848faa3
 async def load(conn:socket, data):
     loop = asyncio.get_event_loop()
     pas=data['pas']
@@ -278,14 +259,6 @@ async def rpc(conn1, conn2):
     #await asyncio.wait(btn_click((loop.sock_recv(conn1, 1024)).decode('utf8'), (loop.sock_recv(conn2, 1024)).decode('utf8'), res))
     print(f)
     res=btn_click(json.loads(f[0].decode('utf8'))["choise"],json.loads(f[1].decode('utf8'))["choise"])
-<<<<<<< HEAD
-    m1 = {"task": 'end', "result":res}
-    m2 = {"task": 'end', "result":-res}
-    await loop.sock_sendall(conn1, str.encode(str(json.dumps(m2))))
-    await loop.sock_sendall(conn2, str.encode(str(json.dumps(m1))))
-    chat(conn1, conn2)
-    chat(conn2, conn1)
-=======
     m1 = {"task": 'show', "result":res}
     m2 = {"task": 'show', "result":-res}
     await loop.sock_sendall(conn1, str.encode(str(json.dumps(m2))))
@@ -299,7 +272,6 @@ async def rpc(conn1, conn2):
     if(data1["task"]=="add"):
         await rpcpoints(conn1, data1["log"])
     await asyncio.gather(chat(conn1, conn2), chat(conn2, conn1))
->>>>>>> a309de28812aa92e4fbcb3007b1abcd5b848faa3
 async  def jail():
     await asyncio.wait(10)
     print('jil')
@@ -368,13 +340,6 @@ async def client_handler(conn):
             await loop.sock_sendall(conn, str.encode(json.dumps({"task": 'error', 'show': str(e)})))
     await loop.sock_sendall(conn, str.encode('end'))
     conn.close()
-
-
-
-
-
-
-
 
 async def run_server():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
