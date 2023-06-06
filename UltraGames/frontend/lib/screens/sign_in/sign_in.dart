@@ -1,12 +1,9 @@
 import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/constants.dart';
-import 'package:frontend/main.dart';
-import 'package:frontend/screens/home/home.dart';
+import 'package:frontend/providers/loginProvider.dart';
+import 'package:frontend/providers/socketProvider.dart';
 import 'package:frontend/screens/register/register.dart';
 import 'package:provider/provider.dart';
 
@@ -20,43 +17,21 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignFormState extends State<SignInScreen> {
-  late String serverResponse;
-  late Socket socket;
-
-  _setConnectionAndListen() async {
-    socket = await Socket.connect(HOST, PORT);
-    socket.listen(
-      (Uint8List data) {
-        serverResponse = String.fromCharCodes(data);
-        if (jsonDecode(serverResponse)["code"] == 200) {
-          Navigator.pushNamed(context, HomeScreen.routeName);
-        } else {
-          print(jsonDecode(serverResponse)["body"]);
-        }
-      },
-      onError: (error) {
-        socket.destroy();
-      },
-      onDone: () {
-        print("Left");
-        socket.destroy();
-      },
-    );
-  }
-
   @override
   void initState() {
-    _setConnectionAndListen();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final userRead = context.read<User>();
-    final user = context.watch<User>();
-    final loginTextEditingController = TextEditingController(text: user.login);
+    final socketRead = context.read<SocketProvider>();
+    final socketWatch = context.watch<SocketProvider>();
+    final loginRead = context.read<LoginProvider>();
+    final loginWatch = context.watch<LoginProvider>();
+    final loginTextEditingController =
+        TextEditingController(text: loginWatch.login);
     final passwordTextEditingController =
-        TextEditingController(text: user.password);
+        TextEditingController(text: loginWatch.password);
 
     return GestureDetector(
       onTap: () {
@@ -86,8 +61,8 @@ class _SignFormState extends State<SignInScreen> {
                       floatingLabelBehavior: FloatingLabelBehavior.always,
                     ),
                   ),
-                  Selector<User, String>(
-                      selector: (_, user) => user.errorLogin,
+                  Selector<LoginProvider, String>(
+                      selector: (_, loginWatch) => loginWatch.errorLogin,
                       builder: (_, errorLogin, __) => errorLogin != ""
                           ? Padding(
                               padding: const EdgeInsets.all(4),
@@ -113,48 +88,49 @@ class _SignFormState extends State<SignInScreen> {
                       floatingLabelBehavior: FloatingLabelBehavior.always,
                     ),
                   ),
-                  Selector<User, String>(
+                  Selector<LoginProvider, String>(
                       selector: (_, user) => user.errorPassword,
                       builder: (_, errorPassword, __) => errorPassword != ""
                           ? Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            const SizedBox(width: 20),
-                            Text(
-                              errorPassword,
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                          ],
-                        ),
-                      )
+                              padding: const EdgeInsets.all(4),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  const SizedBox(width: 20),
+                                  Text(
+                                    errorPassword,
+                                    style: const TextStyle(color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            )
                           : Container()),
                   const SizedBox(height: 30),
                   Padding(
                     padding: const EdgeInsets.only(top: 8, bottom: 24),
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        userRead.setLogin(loginTextEditingController.text);
-                        userRead
+                        loginRead.setLogin(loginTextEditingController.text);
+                        loginRead
                             .setPassword(passwordTextEditingController.text);
+                        socketRead.setContext(context);
 
                         bool loginEmpty = true;
                         bool passwordEmpty = true;
                         if (loginTextEditingController.text.trim().isNotEmpty) {
-                          user.setLoginError("");
+                          loginRead.setLoginError("");
                           loginEmpty = false;
                         } else {
-                          user.setLoginError("Введите логин");
+                          loginRead.setLoginError("Введите логин");
                         }
 
                         if (passwordTextEditingController.text
                             .trim()
                             .isNotEmpty) {
-                          user.setPasswordError("");
+                          loginRead.setPasswordError("");
                           passwordEmpty = false;
                         } else {
-                          user.setPasswordError("Введите пароль");
+                          loginRead.setPasswordError("Введите пароль");
                         }
 
                         if (!loginEmpty && !passwordEmpty) {
@@ -165,11 +141,7 @@ class _SignFormState extends State<SignInScreen> {
                               "password": passwordTextEditingController.text
                             }
                           };
-                          try {
-                            socket.write(jsonEncode(request));
-                          } catch (exception) {
-                            print(exception);
-                          }
+                          socketRead.write(jsonEncode(request));
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -184,8 +156,8 @@ class _SignFormState extends State<SignInScreen> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      userRead.setLogin(loginTextEditingController.text);
-                      userRead.setPassword(passwordTextEditingController.text);
+                      loginRead.setLogin(loginTextEditingController.text);
+                      loginRead.setPassword(passwordTextEditingController.text);
                       Navigator.pushNamedAndRemoveUntil(
                           context, RegisterScreen.routeName, (route) => false);
                     },

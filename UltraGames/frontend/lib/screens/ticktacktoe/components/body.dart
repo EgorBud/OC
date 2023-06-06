@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/components/showMessage.dart';
 
 class Body extends StatefulWidget {
   const Body({super.key});
@@ -134,7 +135,7 @@ class _BodyState extends State<Body> {
       if (occupied[winningPos[0]].isNotEmpty) {
         if (occupied[winningPos[0]] == occupied[winningPos[1]] &&
             occupied[winningPos[0]] == occupied[winningPos[2]]) {
-          showGameOverMessage("Игрок ${occupied[winningPos[0]]} победил");
+          showDoneMessage(context, "Игрок ${occupied[winningPos[0]]} победил");
           gameEnd = true;
           return;
         }
@@ -155,23 +156,8 @@ class _BodyState extends State<Body> {
     }
 
     if (draw) {
-      showGameOverMessage("Ничья");
+      showWarningMessage(context, "Ничья");
       gameEnd = true;
     }
-  }
-
-  void showGameOverMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.green,
-        content: Text(
-          "Игра окончена \n $message",
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 20,
-          ),
-        ),
-      ),
-    );
   }
 }

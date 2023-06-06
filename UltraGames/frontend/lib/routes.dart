@@ -5,8 +5,8 @@ import 'package:frontend/screens/sign_in/sign_in.dart';
 import 'package:frontend/screens/ticktacktoe/ticktacktoe.dart';
 
 final Map<String, WidgetBuilder> routes = {
-  SignInScreen.routeName: (context) => SignInScreen(),
-  RegisterScreen.routeName: (context) => RegisterScreen(),
-  HomeScreen.routeName: (context) => HomeScreen(),
-  TickTackToeScreen.routeName: (context) => TickTackToeScreen(),
+  SignInScreen.routeName: (context) => const SignInScreen(),
+  RegisterScreen.routeName: (context) => const RegisterScreen(),
+  HomeScreen.routeName: (context) => const HomeScreen(),
+  TickTackToeScreen.routeName: (context) => const TickTackToeScreen(),
 };

@@ -280,13 +280,6 @@ async def ticroom(conn, j):
         await asyncio.wait_for(tictactoe(player, conn), timeout=None)
         loop.create_task(client_handler(player))
 
-
-async def fun(conn, j):
-    print('ok')
-
-async def skip(conn, j):
-    print('nok')
-
 async def new(conn, data):
     loop = asyncio.get_event_loop()
     password=data["password"]
@@ -297,11 +290,23 @@ async def new(conn, data):
     with con:
         try:
             con.execute(sql, data)
-            data = {"code" : 200, "body" : "User added to db"}
+            data = {
+			"task": "new",
+			"response": {
+				"code" : 200, 
+				"body" : "User added to db"
+				}
+			}
             await loop.sock_sendall(conn, bytes(json.dumps(data), encoding="utf-8"))
 
         except Exception as e:
-            data = {"code" : 400, "body" : str(e)}
+            data = {
+			"task": "new",
+			"response": {
+				"code" : 400, 
+				"body" : "Such login is exist"
+				}
+			}
             await loop.sock_sendall(conn, str.encode(json.dumps(data)))
 
 async def load(conn, data):
@@ -312,10 +317,22 @@ async def load(conn, data):
     temp = cursor.fetchone()
 
     if temp is not None:
-        data = {"code" : 200, "body" : "User signed in"}
+        data = {
+		"task": "load",
+		"response": {
+			"code" : 200, 
+			"body" : "Signed in"
+			}
+		}
         await loop.sock_sendall(conn, bytes(json.dumps(data), encoding="utf-8"))
     else:
-        data = {"code" : 403, "body" : "Not right password or login"}
+        data = {
+		"task": "load",
+		"response": {
+			"code" : 403, 
+			"body" : "Not right password or login"
+			}
+		}
         await loop.sock_sendall(conn, bytes(json.dumps(data), encoding="utf-8"))
 
 async def client_handler(conn):
@@ -352,6 +369,5 @@ async def run_server():
             loop.create_task(client_handler(client))
         except asyncio.CancelledError:
             print('cancel_me(): отмена ожидания')
-
 
 asyncio.run(run_server())
