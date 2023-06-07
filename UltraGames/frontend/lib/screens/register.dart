@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/providers/registerProvider.dart';
-import 'package:frontend/providers/socketProvider.dart';
-import 'package:frontend/screens/sign_in/sign_in.dart';
+import 'package:frontend/providers/register_provider.dart';
+import 'package:frontend/providers/socket_provider.dart';
+import 'package:frontend/screens/sign_in.dart';
 import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -130,7 +130,7 @@ class _RegisterFormState extends State<RegisterScreen> {
                           : Container()),
                   const SizedBox(height: 30),
                   Padding(
-                    padding: const EdgeInsets.only(top: 8, bottom: 24),
+                    padding: const EdgeInsets.only(top: 8, bottom: 30),
                     child: ElevatedButton.icon(
                       onPressed: () {
                         registerRead
@@ -191,7 +191,6 @@ class _RegisterFormState extends State<RegisterScreen> {
                       label: const Text("Продолжить"),
                     ),
                   ),
-                  const SizedBox(height: 30),
                   GestureDetector(
                     onTap: () {
                       registerRead.setNickname(nicknameTextEditingController.text);

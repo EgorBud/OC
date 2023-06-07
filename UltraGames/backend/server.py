@@ -66,7 +66,6 @@ async def chat(conn1, conn2):
     loop = asyncio.get_event_loop()
 
     while 1:
-
         data = json.loads((await loop.sock_recv(conn1, 1024)).decode('utf8'))
 
         if(data['task']==('chat')):
@@ -98,74 +97,7 @@ async def chatchoise(conn1, conn2):
             break
         print(data['show'])
     await task
-
-async def tic( conn1, conn2):
-    board = list(range(1, 10))
-    loop = asyncio.get_event_loop()
-    counter = 0
-    win = False
-    while not win:
-        draw_board(board, conn1, conn2)
-        if counter % 2 == 0:
-            send=await  take_input("X", conn1, board, conn2)
-        else:
-            send=await take_input("O", conn2, board, conn1)
-        await loop.sock_sendall(conn1, str.encode((json.dumps({"task": 'game', 'move': (send)}))))
-        await loop.sock_sendall(conn2, str.encode((json.dumps({"task": 'game', 'move': (send)}))))
-
-        counter += 1
-        if counter > 4:
-            tmp = await check_win(board)
-            if tmp:
-                print (tmp, "выиграл!")
-                win = True
-                if(tmp=='X'):
-                    return -1
-                else:
-                    return 1
-                
-        if counter == 9:
-            print ("Ничья!")
-            return 0
-            
-    await draw_board(board, conn1, conn2)
-
-async def tictactoe(conn1, conn2):
-    loop = asyncio.get_event_loop()
-    res = await tic(conn1, conn2)
-    m1 = {"task": 'end', "result": res}
-    m2 = {"task": 'end', "result": -res}
-    await loop.sock_sendall(conn1, str.encode((str(json.dumps(m2)))))
-    await loop.sock_sendall(conn2, str.encode(str(json.dumps(m1))))
-    data1 = json.loads((await loop.sock_recv(conn1, 1024)).decode('utf8'))
-    data2 = json.loads((await loop.sock_recv(conn2, 1024)).decode('utf8'))
-    print(data2)
-    print(data1)
-    if(data2["task"]=="add"):
-        await tpoints(conn2, data2["log"])
-    if(data1["task"]=="add"):
-        await tpoints(conn1, data1["log"])
-    await asyncio.gather(chat(conn1, conn2), chat(conn2, conn1))
     
-async def new(conn, data):
-    loop = asyncio.get_event_loop()
-    passw=data['pas']
-    log=data['log']
-
-    sql = 'INSERT INTO users ( login,    password, tscore,   rpsscore ) values(?, ?, ?, ?)'
-    data = [
-        (log, passw, 0, 0)
-
-    ]
-    with con:
-        try:
-            con.execute(sql, data)
-        except Exception as e:
-            print(e)
-            await loop.sock_sendall(conn, str.encode(json.dumps({"state": 0, 'show': str(e)})))
-            return None
-    await loop.sock_sendall(conn, bytes(json.dumps({"state": 1 , "user":(log, passw, 0, 0)}), encoding="utf-8"))
-
 async def tpoints(conn, log):
     loop = asyncio.get_event_loop()
     print(log)
@@ -242,10 +174,6 @@ async def rpc(conn1, conn2):
         await rpcpoints(conn1, data1["log"])
     await asyncio.gather(chat(conn1, conn2), chat(conn2, conn1))
 
-async  def jail():
-    await asyncio.wait(10)
-    print('jil')
-
 async def rpcroom(conn, j):
     loop = asyncio.get_event_loop()
     global rpcwaiters
@@ -263,77 +191,125 @@ async def rpcroom(conn, j):
         await asyncio.wait_for(rpc(player, conn), timeout=None)
         loop.create_task(client_handler(player))
 
-async def ticroom(conn, j):
+async def ticroom(conn, request):
     loop = asyncio.get_event_loop()
     global ticwaiters
-    key = j['key']
+    key = request["key"]
     if ticwaiters.get(key) is None:
         ticwaiters[key] = conn
-        await loop.sock_sendall(conn, str.encode(json.dumps({"task": 'wait', 'show': 'waiting for opponent'})))
+        await loop.sock_sendall(conn, str.encode(json.dumps({"task": "wait", "response": {"code" : 200, "body": "waiting for opponent"}})))
         asyncio.current_task().cancel()
 
     else:
         player=ticwaiters[key]
         ticwaiters.pop(key)
-        await loop.sock_sendall(player, str.encode(json.dumps({"task": 'start', 'show': 'opponent found'})))
-        await loop.sock_sendall(conn, str.encode(json.dumps({"task": 'start', 'show': 'opponent found'})))
+        await loop.sock_sendall(player, str.encode(json.dumps({"task": "start", "response": {"code" : 200, "body": "opponent found"}})))
+        await loop.sock_sendall(conn, str.encode(json.dumps({"task": "start", "response": {"code" : 200, "body": "opponent found"}})))
         await asyncio.wait_for(tictactoe(player, conn), timeout=None)
         loop.create_task(client_handler(player))
 
-async def new(conn, data):
+async def tictactoe(conn1, conn2):
     loop = asyncio.get_event_loop()
-    password=data["password"]
-    login=data["login"]
+    res = await tic(conn1, conn2)
+    m1 = {"task": 'end', "result": res}
+    m2 = {"task": 'end', "result": -res}
+    await loop.sock_sendall(conn1, str.encode((str(json.dumps(m2)))))
+    await loop.sock_sendall(conn2, str.encode(str(json.dumps(m1))))
+    data1 = json.loads((await loop.sock_recv(conn1, 1024)).decode('utf8'))
+    data2 = json.loads((await loop.sock_recv(conn2, 1024)).decode('utf8'))
+    print(data2)
+    print(data1)
+    if(data2["task"]=="add"):
+        await tpoints(conn2, data2["log"])
+    if(data1["task"]=="add"):
+        await tpoints(conn1, data1["log"])
+    #await asyncio.gather(chat(conn1, conn2), chat(conn2, conn1))
+
+async def tic(conn1, conn2):
+    board = list(range(1, 10))
+    loop = asyncio.get_event_loop()
+    counter = 0
+    win = False
+    while not win:
+        draw_board(board, conn1, conn2)
+        if counter % 2 == 0:
+            send=await  take_input("X", conn1, board, conn2)
+        else:
+            send=await take_input("O", conn2, board, conn1)
+        await loop.sock_sendall(conn1, str.encode((json.dumps({"task": 'game', 'move': (send)}))))
+        await loop.sock_sendall(conn2, str.encode((json.dumps({"task": 'game', 'move': (send)}))))
+
+        counter += 1
+        if counter > 4:
+            tmp = await check_win(board)
+            if tmp:
+                print (tmp, "выиграл!")
+                win = True
+                if(tmp=='X'):
+                    return -1
+                else:
+                    return 1
+                
+        if counter == 9:
+            print ("Ничья!")
+            return 0
+            
+    await draw_board(board, conn1, conn2)
+
+async def new(conn, request):
+    loop = asyncio.get_event_loop()
+    password=request["password"]
+    login=request["login"]
 
     sql = "INSERT INTO users (login, password) values(?, ?)"
     data = (login, password,)
     with con:
         try:
             con.execute(sql, data)
-            data = {
+            response = {
 			"task": "new",
 			"response": {
 				"code" : 200, 
 				"body" : "User added to db"
 				}
 			}
-            await loop.sock_sendall(conn, bytes(json.dumps(data), encoding="utf-8"))
+            await loop.sock_sendall(conn, bytes(json.dumps(response), encoding="utf-8"))
 
         except Exception as e:
-            data = {
+            response = {
 			"task": "new",
 			"response": {
 				"code" : 400, 
 				"body" : "Such login is exist"
 				}
 			}
-            await loop.sock_sendall(conn, str.encode(json.dumps(data)))
+            await loop.sock_sendall(conn, str.encode(json.dumps(response)))
 
-async def load(conn, data):
+async def load(conn, request):
     loop = asyncio.get_event_loop()
-    password = data["password"]
-    login = data["login"]
+    password = request["password"]
+    login = request["login"]
     cursor.execute("SELECT login, password, tscore, rpsscore FROM users WHERE login=? AND password=?", (login, password))
     temp = cursor.fetchone()
 
     if temp is not None:
-        data = {
+        response = {
 		"task": "load",
 		"response": {
 			"code" : 200, 
 			"body" : "Signed in"
 			}
 		}
-        await loop.sock_sendall(conn, bytes(json.dumps(data), encoding="utf-8"))
+        await loop.sock_sendall(conn, bytes(json.dumps(response), encoding="utf-8"))
     else:
-        data = {
+        response = {
 		"task": "load",
 		"response": {
 			"code" : 403, 
 			"body" : "Not right password or login"
 			}
 		}
-        await loop.sock_sendall(conn, bytes(json.dumps(data), encoding="utf-8"))
+        await loop.sock_sendall(conn, bytes(json.dumps(response), encoding="utf-8"))
 
 async def client_handler(conn):
     loop = asyncio.get_event_loop()
@@ -347,8 +323,13 @@ async def client_handler(conn):
                     await load(conn, message["request"])
                 case "new":
                     await new(conn, message["request"])
+                case "ticroom":
+                    await ticroom(conn, message["request"])
+               
+            
+
                 case _:
-                    await loop.sock_sendall(conn, str.encode(json.dumps({"code" : 400, "body" : "No such command"})))
+                    await loop.sock_sendall(conn, str.encode(json.dumps({"task" : "", "response" : {"code" : 400, "body" : "No such command"}})))
 
         except Exception as e:
             print(e)

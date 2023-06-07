@@ -7,7 +7,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
     while True:
         try:
-            task = input()
+            
+            task = "ticroom"
+            key = "12"
             #login = input()
             #password = input()
 
@@ -17,8 +19,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             data = {
                 "task" : task,
                 "request": {
-                    "login" : login,
-                    "password" : password 
+                    "key" : key
                 }
             }
 
@@ -28,6 +29,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             
             data = json.loads(s.recv(1024).decode('utf8'))
             print(data)
+            input()
 
 
 

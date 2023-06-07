@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/providers/loginProvider.dart';
-import 'package:frontend/providers/socketProvider.dart';
-import 'package:frontend/screens/register/register.dart';
+import 'package:frontend/providers/login_provider.dart';
+import 'package:frontend/providers/socket_provider.dart';
+import 'package:frontend/screens/register.dart';
 import 'package:provider/provider.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -25,7 +25,6 @@ class _SignFormState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     final socketRead = context.read<SocketProvider>();
-    final socketWatch = context.watch<SocketProvider>();
     final loginRead = context.read<LoginProvider>();
     final loginWatch = context.watch<LoginProvider>();
     final loginTextEditingController =
@@ -107,7 +106,7 @@ class _SignFormState extends State<SignInScreen> {
                           : Container()),
                   const SizedBox(height: 30),
                   Padding(
-                    padding: const EdgeInsets.only(top: 8, bottom: 24),
+                    padding: const EdgeInsets.only(top: 8, bottom: 30),
                     child: ElevatedButton.icon(
                       onPressed: () {
                         loginRead.setLogin(loginTextEditingController.text);
