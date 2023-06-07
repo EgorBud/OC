@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:frontend/components/showMessage.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/locator.dart';
@@ -86,7 +85,6 @@ class SocketProvider extends ChangeNotifier {
         else if (_serverResponse["task"] == "start") {
           if (_serverResponse["response"]["code"] == 200) {
             navigationService.navigateToAndRemove(TickTackToeScreen.routeName);
-            showDoneMessage(_context!, _serverResponse["response"]["body"]);
           } else {
             showErrorMessage(_context!, _serverResponse["response"]["body"]);
           }

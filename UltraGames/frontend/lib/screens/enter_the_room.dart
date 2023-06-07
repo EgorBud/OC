@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:frontend/locator.dart';
 import 'package:frontend/providers/key_provider.dart';
@@ -111,12 +113,7 @@ class _EnterTheRoomScreenState extends State<EnterTheRoomScreen> {
                             }
                           };
 
-                          //socketRead.write(request);
-
-                          print(selectedItem.task);
-                          print(keyTextEditingController.text);
-                          navigationService
-                              .navigateTo(WaitingRoomScreen.routeName);
+                          socketRead.write(jsonEncode(request));
 
                         } else {
                           keyRead.setKeyError("Введите ключ");

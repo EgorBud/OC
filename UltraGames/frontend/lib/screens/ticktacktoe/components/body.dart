@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:frontend/components/showMessage.dart';
+import 'package:frontend/providers/socket_provider.dart';
+import 'package:provider/provider.dart';
 
 class Body extends StatefulWidget {
   const Body({super.key});
@@ -13,7 +17,6 @@ class _BodyState extends State<Body> {
   static const String playerO = "O";
 
   String currentPlayer = playerX;
-  bool gameEnd = false;
   List<String> occupied = ["", "", "", "", "", "", "", "", "",];
 
   @override
@@ -25,7 +28,7 @@ class _BodyState extends State<Body> {
               children: [
                 _headerText(),
                 _gameContainer(),
-                _restartButton(),
+                //_restartButton(),
               ],
             ),
           )
@@ -60,17 +63,23 @@ class _BodyState extends State<Body> {
   }
 
   Widget _box(int index) {
+    final socketRead = context.read<SocketProvider>();
+
     return InkWell(
       onTap: () {
-        if (gameEnd || occupied[index].isNotEmpty) {
+        if (occupied[index].isNotEmpty) {
+          showWarningMessage(context, "Клетка не пуста");
           return;
         }
-        setState(() {
-          occupied[index] = currentPlayer;
-          changeTurn();
-          checkForWinner();
-          checkForDraw();
-        });
+
+        dynamic message = {
+          "task" : "",
+          "request": {
+            "move" : index,
+          }
+        };
+
+        socketRead.write(jsonEncode(message));
       },
       child: Container(
         color: occupied[index].isEmpty
@@ -87,77 +96,5 @@ class _BodyState extends State<Body> {
         ),
       ),
     );
-  }
-
-  Widget _restartButton() {
-    return TextButton(
-      style: TextButton.styleFrom(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: Colors.blueAccent,
-      ),
-      onPressed: () {
-        setState(() {
-          gameEnd = false;
-          occupied = ["", "", "", "", "", "", "", "", "",];
-        });
-      },
-      child: const Text(
-        "Начать заново",
-        style: TextStyle(
-          fontSize: 20,
-          color: Colors.white
-        ),
-      )
-    );
-  }
-
-  void changeTurn() {
-    if (currentPlayer == playerX) {
-      currentPlayer = playerO;
-    } else {
-      currentPlayer = playerX;
-    }
-  }
-
-  void checkForWinner() {
-    List<List<int>> winningList = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-
-    for (var winningPos in winningList) {
-      if (occupied[winningPos[0]].isNotEmpty) {
-        if (occupied[winningPos[0]] == occupied[winningPos[1]] &&
-            occupied[winningPos[0]] == occupied[winningPos[2]]) {
-          showDoneMessage(context, "Игрок ${occupied[winningPos[0]]} победил");
-          gameEnd = true;
-          return;
-        }
-      }
-    }
-  }
-
-  void checkForDraw() {
-    if (gameEnd) {
-      return;
-    }
-
-    bool draw = true;
-    for (var occupiedPlayer in occupied) {
-      if (occupiedPlayer.isEmpty) {
-        draw = false;
-      }
-    }
-
-    if (draw) {
-      showWarningMessage(context, "Ничья");
-      gameEnd = true;
-    }
   }
 }
