@@ -1,6 +1,7 @@
 import 'package:frontend/locator.dart';
+import 'package:frontend/models/message.dart';
 import 'package:frontend/screens/home.dart';
-import 'package:frontend/screens/ticktacktoe/ticktacktoe.dart';
+import 'package:frontend/screens/ticktacktoe.dart';
 import 'package:frontend/services/navigation_service.dart';
 import 'package:provider/provider.dart';
 
@@ -29,14 +30,26 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => RegisterProvider()),
         ChangeNotifierProvider(create: (context) => KeyProvider()),
         ChangeNotifierProvider(create: (context) => SocketProvider()),
+        ChangeNotifierProvider(create: (context) => ChatProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: "Flutter Demo",
-        initialRoute: SignInScreen.routeName,
+        initialRoute: TickTackToeScreen.routeName,
         routes: routes,
         navigatorKey: locator<NavigationService>().navigatorKey,
       ),
     );
+  }
+}
+
+class ChatProvider extends ChangeNotifier {
+  final List<Message> _messages = [];
+
+  List<Message> get messages => _messages;
+
+  void addMessage(Message message) {
+    _messages.add(message);
+    notifyListeners();
   }
 }

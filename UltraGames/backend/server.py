@@ -156,7 +156,40 @@ async def rpcroom(conn, j):
         await asyncio.wait_for(rpc(player, conn), timeout=None)
         loop.create_task(client_handler(player))
 
+room = {
+    "players" : [
+        "login1", "login2"
+    ],
+    "status" : "waiting, game, chatting, game",
+    "board" : ["", "", "", "", "", "", "", "", ""],
+    "chat_history" : [
+        {
+            "message1" : {
+                "sender" : "login1",
+                "body" : "some text",
+                "time" : "when send"
+            }
+        },
+        {
+            "message1" : {
+                "sender" : "login2",
+                "body" : "some text",
+                "time" : "when send"
+            }
+        }
+    ],
+}
 
+rooms = [
+    {"key" : room}
+]
+
+
+
+"""
+
+
+"""
 
 
 async def ticroom(conn, request):
@@ -196,16 +229,22 @@ async def ticroom(conn, request):
         await asyncio.wait_for(tictactoe(player, conn), timeout=None)
         loop.create_task(client_handler(player))
 
+
 async def tictactoe(conn1, conn2):
     loop = asyncio.get_event_loop()
     res = await tic(conn1, conn2)
-    message1 = json.loads((await loop.sock_recv(conn1, 1024)).decode('utf8'))
+    await asyncio.sleep(1)   
+    ''' message1 = json.loads((await loop.sock_recv(conn1, 1024)).decode('utf8'))
     message2 = json.loads((await loop.sock_recv(conn2, 1024)).decode('utf8'))
+'''
+
     
     m1 = {"task": "end", "result": res}
     m2 = {"task": "end", "result": -res}
     await loop.sock_sendall(conn1, str.encode((str(json.dumps(m2)))))
     await loop.sock_sendall(conn2, str.encode(str(json.dumps(m1))))
+
+    await asyncio.gather(chat(conn1, conn2), chat(conn2, conn1))
 
 async def tic(conn1, conn2):
 	board = list(range(0, 9))
@@ -260,7 +299,6 @@ async def tic(conn1, conn2):
 		if counter == 9:
 			return 0
 	
-
 async def take_input(player_token, conn, board):
     loop = asyncio.get_event_loop()
     message = json.loads((await loop.sock_recv(conn, 1024)).decode('utf8'))  

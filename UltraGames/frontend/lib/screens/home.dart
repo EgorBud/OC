@@ -3,7 +3,7 @@ import 'package:frontend/locator.dart';
 import 'package:frontend/screens/create_room.dart';
 import 'package:frontend/screens/enter_the_room.dart';
 import 'package:frontend/screens/random_game.dart';
-import 'package:frontend/screens/ticktacktoe/ticktacktoe.dart';
+import 'package:frontend/screens/ticktacktoe.dart';
 import 'package:frontend/screens/waiting_room.dart';
 import 'package:frontend/services/navigation_service.dart';
 

@@ -137,7 +137,7 @@ async def tic( conn1, conn2):
             print ("Ничья!")
             return 0
             break
-    await draw_board(board, conn1, conn2)
+    #await draw_board(board, conn1, conn2)
 
 
 async def tictactoe(conn1, conn2):

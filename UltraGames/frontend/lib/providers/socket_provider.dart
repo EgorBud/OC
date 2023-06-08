@@ -7,7 +7,7 @@ import 'package:frontend/components/showMessage.dart';
 import 'package:frontend/constants.dart';
 import 'package:frontend/locator.dart';
 import 'package:frontend/screens/home.dart';
-import 'package:frontend/screens/ticktacktoe/ticktacktoe.dart';
+import 'package:frontend/screens/ticktacktoe.dart';
 import 'package:frontend/screens/waiting_room.dart';
 import 'package:frontend/services/navigation_service.dart';
 
@@ -114,11 +114,14 @@ class SocketProvider extends ChangeNotifier {
             showErrorMessage(_context!, _serverResponse["response"]["body"]);
           }
         } else if (_serverResponse["task"] == "end") {
-          if (_serverResponse["response"]["code"] == 200) {
-            navigationService.navigateToAndRemove(HomeScreen.routeName);
-          } else {
-            showErrorMessage(_context!, _serverResponse["response"]["body"]);
-          }
+          //if (_serverResponse["response"]["code"] == 200) {
+
+
+
+          navigationService.navigateToAndRemove(HomeScreen.routeName);
+          //} else {
+          //  showErrorMessage(_context!, _serverResponse["response"]["body"]);
+          //}
         }
       }, onError: onError, onDone: onDone);
     } catch (e) {
