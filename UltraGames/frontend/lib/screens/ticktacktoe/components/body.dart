@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:frontend/components/showMessage.dart';
+import 'package:frontend/main.dart';
 import 'package:frontend/providers/socket_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -13,86 +14,75 @@ class Body extends StatefulWidget {
 }
 
 class _BodyState extends State<Body> {
-  static const String playerX = "X";
-  static const String playerO = "O";
-
-  String currentPlayer = playerX;
-  List<String> occupied = ["", "", "", "", "", "", "", "", "",];
-
   @override
   Widget build(BuildContext context) {
-      return SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _headerText(),
-                _gameContainer(),
-                //_restartButton(),
-              ],
-            ),
-          )
-      );
-  }
-
-  Widget _headerText() {
-    return Text(
-      "Ходит $currentPlayer",
-      style: const TextStyle(
-        color: Colors.black87,
-        fontSize: 32,
-        fontWeight: FontWeight.bold,
-      ),
-    );
-  }
-
-  Widget _gameContainer() {
-    return Container(
-      height: MediaQuery.of(context).size.height / 2,
-      width: MediaQuery.of(context).size.height / 2,
-      margin: const EdgeInsets.all(8),
-      child: GridView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
-        itemCount: 9,
-        itemBuilder: (context, int index) {
-          return _box(index);
-        }
-      ),
-    );
-  }
-
-  Widget _box(int index) {
     final socketRead = context.read<SocketProvider>();
+    final socketWatch = context.watch<SocketProvider>();
+    return SafeArea(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              socketWatch.imTapped == true ? "Ходите" : "Ходит соперник",
+              style: const TextStyle(
+                color: Colors.black87,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
 
-    return InkWell(
-      onTap: () {
-        if (occupied[index].isNotEmpty) {
-          showWarningMessage(context, "Клетка не пуста");
-          return;
-        }
+            Container(
+              height: MediaQuery.of(context).size.height / 2,
+              width: MediaQuery.of(context).size.height / 2,
+              margin: const EdgeInsets.all(8),
+              child: GridView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3),
+                itemCount: 9,
+                itemBuilder: (context, int index) {
+                  return InkWell(
+                    onTap: () {
+                      if (socketWatch.board[index].isNotEmpty) {
+                        showWarningMessage(context, "Клетка не пуста");
+                        return;
+                      }
 
-        dynamic message = {
-          "task" : "",
-          "request": {
-            "move" : index,
-          }
-        };
+                      if (socketWatch.imTapped == false) {
+                        showWarningMessage(context, "Не ваш ход");
+                        return;
+                      }
 
-        socketRead.write(jsonEncode(message));
-      },
-      child: Container(
-        color: occupied[index].isEmpty
-          ? Colors.black26
-          : occupied[index] == playerX
-            ? Colors.blue
-            : Colors.orange,
-        margin: const EdgeInsets.all(8),
-        child: Center(
-          child: Text(
-            occupied[index],
-            style: const TextStyle(fontSize: 50),
-          ),
+                      dynamic message = {
+                        "task": "",
+                        "request": {
+                          "move": index,
+                        }
+                      };
+
+                      socketRead.write(jsonEncode(message));
+                    },
+                    child: Container(
+                      color: socketWatch.board[index].isEmpty
+                          ? Colors.black26
+                          : socketWatch.board[index] == "O"
+                              ? Colors.blue
+                              : Colors.orange,
+                      margin: const EdgeInsets.all(8),
+                      child: Center(
+                        child: Text(
+                          socketWatch.board[index],
+                          style: const TextStyle(fontSize: 50),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            //_restartButton(),
+          ],
         ),
       ),
     );

@@ -11,6 +11,7 @@ import 'package:frontend/screens/ticktacktoe/ticktacktoe.dart';
 import 'package:frontend/screens/waiting_room.dart';
 import 'package:frontend/services/navigation_service.dart';
 
+
 class SocketProvider extends ChangeNotifier {
   Socket? socket;
   dynamic _serverResponse;
@@ -20,6 +21,20 @@ class SocketProvider extends ChangeNotifier {
   BuildContext? _context;
 
   dynamic get serverResponse => _serverResponse;
+
+  List<String> board = ["", "", "", "", "", "", "", "", ""];
+
+  String? myToken = "T";
+  String? boardToken = "T";
+  bool? imTapped = false;
+
+  void move(int index, bool imTapped) {
+    board[index] = boardToken!;
+    this.imTapped = imTapped;
+    
+    print(board);
+    notifyListeners();
+  }
 
   SocketProvider() {
     connect();
@@ -45,7 +60,7 @@ class SocketProvider extends ChangeNotifier {
 
   Future<void> onError(error) async {
     print(error);
-    await Future.delayed(Duration(seconds: 5));
+    await Future.delayed(const Duration(seconds: 5));
     connect();
   }
 
@@ -59,7 +74,8 @@ class SocketProvider extends ChangeNotifier {
 
         print(_serverResponse);
 
-        final NavigationService navigationService = locator<NavigationService>();
+        final NavigationService navigationService =
+            locator<NavigationService>();
 
         if (_serverResponse["task"] == "load") {
           if (_serverResponse["response"]["code"] == 200) {
@@ -67,24 +83,39 @@ class SocketProvider extends ChangeNotifier {
           } else {
             showErrorMessage(_context!, _serverResponse["response"]["body"]);
           }
-        }
-        else if (_serverResponse["task"] == "new") {
+        } else if (_serverResponse["task"] == "new") {
           if (_serverResponse["response"]["code"] == 200) {
             navigationService.navigateToAndRemove(HomeScreen.routeName);
           } else {
             showErrorMessage(_context!, _serverResponse["response"]["body"]);
           }
-        }
-        else if (_serverResponse["task"] == "wait") {
+        } else if (_serverResponse["task"] == "wait") {
           if (_serverResponse["response"]["code"] == 200) {
             navigationService.navigateToAndRemove(WaitingRoomScreen.routeName);
           } else {
             showErrorMessage(_context!, _serverResponse["response"]["body"]);
           }
-        }
-        else if (_serverResponse["task"] == "start") {
+        } else if (_serverResponse["task"] == "start") {
           if (_serverResponse["response"]["code"] == 200) {
+            myToken = _serverResponse["response"]["body"]["player_token"];
+            imTapped = _serverResponse["response"]["body"]["im_tapped"];
+            notifyListeners();
             navigationService.navigateToAndRemove(TickTackToeScreen.routeName);
+          } else {
+            showErrorMessage(_context!, _serverResponse["response"]["body"]);
+          }
+        } else if (_serverResponse["task"] == "game") {
+          if (_serverResponse["response"]["code"] == 200) {
+            var body = _serverResponse["response"]["body"];
+            boardToken = body["board_token"];
+            notifyListeners();
+            move(body["position"], body["im_tapped"]);
+          } else {
+            showErrorMessage(_context!, _serverResponse["response"]["body"]);
+          }
+        } else if (_serverResponse["task"] == "end") {
+          if (_serverResponse["response"]["code"] == 200) {
+            navigationService.navigateToAndRemove(HomeScreen.routeName);
           } else {
             showErrorMessage(_context!, _serverResponse["response"]["body"]);
           }
