@@ -30,26 +30,14 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => RegisterProvider()),
         ChangeNotifierProvider(create: (context) => KeyProvider()),
         ChangeNotifierProvider(create: (context) => SocketProvider()),
-        ChangeNotifierProvider(create: (context) => ChatProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: "Flutter Demo",
-        initialRoute: TickTackToeScreen.routeName,
+        initialRoute: SignInScreen.routeName,
         routes: routes,
         navigatorKey: locator<NavigationService>().navigatorKey,
       ),
     );
-  }
-}
-
-class ChatProvider extends ChangeNotifier {
-  final List<Message> _messages = [];
-
-  List<Message> get messages => _messages;
-
-  void addMessage(Message message) {
-    _messages.add(message);
-    notifyListeners();
   }
 }

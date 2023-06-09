@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:frontend/main.dart';
 import 'package:frontend/models/message.dart';
+import 'package:frontend/providers/socket_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -24,7 +27,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final loginRead = context.read<ChatProvider>();
+    final socketRead = context.read<SocketProvider>();
+    final socketWatch = context.watch<SocketProvider>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Чат"),
@@ -32,45 +37,40 @@ class _ChatScreenState extends State<ChatScreen> {
       body: Column(
         children: [
           Expanded(
-            child: Consumer<ChatProvider>(
-              builder: (_, provider, __) => ListView.separated(
-                padding: const EdgeInsets.all(16),
-                itemBuilder: (context, index) {
-                  final message = provider.messages[index];
-                  return Wrap(
-                    alignment: message.senderUsername == "x"
-                        ? WrapAlignment.end
-                        : WrapAlignment.start,
-                    children: [
-                      Card(
-                        color: message.senderUsername == "x"
-                            ? Theme.of(context).primaryColorLight
-                            : Colors.white,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: message.senderUsername == "x"
-                                ? CrossAxisAlignment.end
-                                : CrossAxisAlignment.start,
-                            children: [
-                              Text(message.message),
-                              Text(
-                                DateFormat('hh:mm a').format(message.sentAt),
-                                style: Theme.of(context).textTheme.caption,
-                              ),
-                            ],
-                          ),
+            child: ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemBuilder: (context, index) {
+                final message = socketWatch.messages[index];
+                return Wrap(
+                  alignment: message.senderUsername == socketWatch.myToken
+                      ? WrapAlignment.end
+                      : WrapAlignment.start,
+                  children: [
+                    Card(
+                      color: message.senderUsername == socketWatch.myToken
+                          ? Theme.of(context).primaryColorLight
+                          : Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment:
+                              message.senderUsername == socketWatch.myToken
+                                  ? CrossAxisAlignment.end
+                                  : CrossAxisAlignment.start,
+                          children: [
+                            Text(message.message),
+                          ],
                         ),
-                      )
-                    ],
-                  );
-                },
-                separatorBuilder: (_, index) => const SizedBox(
-                  height: 5,
-                ),
-                itemCount: provider.messages.length,
+                      ),
+                    )
+                  ],
+                );
+              },
+              separatorBuilder: (_, index) => const SizedBox(
+                height: 5,
               ),
+              itemCount: socketWatch.messages.length,
             ),
           ),
           Container(
@@ -85,7 +85,6 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: [
                   Expanded(
                     child: TextField(
-
                       controller: _messageInputController,
                       decoration: const InputDecoration(
                         hintText: "",
@@ -96,12 +95,22 @@ class _ChatScreenState extends State<ChatScreen> {
                   IconButton(
                     onPressed: () {
                       if (_messageInputController.text.trim().isNotEmpty) {
-                        loginRead.addMessage(
+                        socketRead.addMessageLocally(
                           Message(
-                              message: _messageInputController.text,
-                              senderUsername: "x",
-                              sentAt: DateTime.now()),
+                            message: _messageInputController.text,
+                            senderUsername: socketWatch.myToken,
+                          ),
                         );
+
+                        dynamic request = {
+                          "task": "chat",
+                          "request": {
+                            "message": _messageInputController.text,
+                            "sender": socketWatch.myToken,
+                          }
+                        };
+
+                        socketRead.write(jsonEncode(request));
                         _messageInputController.clear();
                       }
                     },

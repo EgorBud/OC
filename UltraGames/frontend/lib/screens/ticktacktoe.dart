@@ -55,6 +55,13 @@ class _TickTackToeScreenState extends State<TickTackToeScreen> {
                   itemBuilder: (context, int index) {
                     return InkWell(
                       onTap: () {
+                        socketRead.setContext(context);
+
+                        if (socketWatch.gameStart == false) {
+                          showWarningMessage(context, "Игра закончилась");
+                          return;
+                        }
+
                         if (socketWatch.board[index].isNotEmpty) {
                           showWarningMessage(context, "Клетка не пуста");
                           return;
@@ -66,7 +73,7 @@ class _TickTackToeScreenState extends State<TickTackToeScreen> {
                         }
 
                         dynamic message = {
-                          "task": "",
+                          "task": "game",
                           "request": {
                             "move": index,
                           }
@@ -93,22 +100,39 @@ class _TickTackToeScreenState extends State<TickTackToeScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.only(left: 40.0, right: 40),
+                child: ElevatedButton(
+                  onPressed: () {
+                    dynamic request = {
+                      "task": "leave"
+                    };
+
+                    socketRead.write(jsonEncode(request));
+                  },
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      minimumSize: const Size(double.infinity, 56),
+                      shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(50)))),
+                  child: const Text("Покинуть комнату"),
+                ),
+              ),
             ],
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          navigationService.navigateTo(ChatScreen.routeName);
-        },
-        backgroundColor: Colors.blueAccent,
-        child: true
-            ? const Icon(Icons.message_outlined)
-            : const Badge(
-                label: Text("12"),
-                child: Icon(Icons.message_outlined),
-              ),
-      ),
+          onPressed: () {
+            socketRead.notifyCheck();
+            navigationService.navigateTo(ChatScreen.routeName);
+          },
+          backgroundColor: Colors.blueAccent,
+          child: socketWatch.notify
+              ? Badge(
+                  label: Text("${socketWatch.countMessage}"),
+                  child: const Icon(Icons.message_outlined))
+              : const Icon(Icons.message_outlined)),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
