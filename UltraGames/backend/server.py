@@ -112,7 +112,7 @@ async def chat(conn1, conn2):
         message = json.loads((await loop.sock_recv(conn1, 1024)).decode('utf8'))
         if message['task'] == 'chat':
             await loop.sock_sendall(conn2, str.encode(json.dumps({
-                "task" : "chat",g
+                "task" : "chat",
                 "response" : {
                     "message" : message["request"]["message"],
                     "sender" : message["request"]["sender"],
