@@ -2,8 +2,8 @@ FROM python
 
 WORKDIR /app
 
-EXPOSE 3003
+EXPOSE 6666
 
 COPY . .
 
-CMD ["python", "serv.py"]
+CMD ["python", "server.py"]

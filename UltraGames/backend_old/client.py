@@ -57,8 +57,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     while(i!=1):
         #olduser
-        login="man8"
-        password="333"
+        login="man"
+        password="123"
         #login=input()
         #password=input()
         m = {"task": "load", "log": login, "pas": password}
@@ -91,6 +91,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         while(potok.is_alive()):
             g=input()
             if(g != '1'):
+
                 if (g == '0'):
                     m = {"task": "end"}
                     data = json.dumps(m)
@@ -100,6 +101,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 data = json.dumps(m)
                 s.sendall((bytes(data, encoding="utf-8")))
             else:
+
                 print("turn")
 
                 t=input()

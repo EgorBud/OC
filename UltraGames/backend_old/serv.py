@@ -6,7 +6,7 @@ import asyncio
 HOST='0.0.0.0'
 PORT =3003
 
-con = sl.connect('users.sql')
+con = sl.connect('./db/users.sql')
 cursor = con.cursor()
 rpcwaiters= {'dict': socket}
 
@@ -137,14 +137,14 @@ async def tic( conn1, conn2):
             print ("Ничья!")
             return 0
             break
-    await draw_board(board, conn1, conn2)
+    #await draw_board(board, conn1, conn2)
 
 
 async def tictactoe(conn1, conn2):
     loop = asyncio.get_event_loop()
     res=(await tic(conn1, conn2))
-    m1 = {"task": 'show', "result": res}
-    m2 = {"task": 'show', "result": -res}
+    m1 = {"task": 'end', "result": res}
+    m2 = {"task": 'end', "result": -res}
     await loop.sock_sendall(conn1, str.encode((str(json.dumps(m2)))))
     await loop.sock_sendall(conn2, str.encode(str(json.dumps(m1))))
     data1 = json.loads((await loop.sock_recv(conn1, 1024)).decode('utf8'))
@@ -156,6 +156,7 @@ async def tictactoe(conn1, conn2):
     if(data1["task"]=="add"):
         await tpoints(conn1, data1["log"])
     await asyncio.gather(chat(conn1, conn2), chat(conn2, conn1))
+    
 async def new(conn, data):
     loop = asyncio.get_event_loop()
     passw=data['pas']
@@ -339,13 +340,6 @@ async def client_handler(conn):
             await loop.sock_sendall(conn, str.encode(json.dumps({"task": 'error', 'show': str(e)})))
     await loop.sock_sendall(conn, str.encode('end'))
     conn.close()
-
-
-
-
-
-
-
 
 async def run_server():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
