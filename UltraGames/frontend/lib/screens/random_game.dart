@@ -1,7 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:frontend/locator.dart';
 import 'package:frontend/providers/socket_provider.dart';
-import 'package:frontend/screens/waiting_room.dart';
 import 'package:frontend/services/navigation_service.dart';
 import 'package:provider/provider.dart';
 
@@ -36,18 +37,7 @@ class _RandomGameScreenState extends State<RandomGameScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Column(
                 children: [
-                  const SizedBox(height: 20),
-                  /*
-                  const Text(
-                    "Создание комнаты",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  */
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 40),
                   SizedBox(
                     width: double.infinity,
                     child: DropdownButtonFormField<CreateRoom>(
@@ -72,9 +62,8 @@ class _RandomGameScreenState extends State<RandomGameScreen> {
                         }
                       };
 
-                      //socketRead.write(request);
                       print(selectedItem.task);
-                      navigationService.navigateTo(WaitingRoomScreen.routeName);
+                      socketRead.write(jsonEncode(request));
                     },
                     style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blueAccent,
