@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/providers/register_provider.dart';
+import 'package:frontend/providers/login_and_register_provider.dart';
 import 'package:frontend/providers/socket_provider.dart';
 import 'package:frontend/screens/sign_in.dart';
 import 'package:provider/provider.dart';
@@ -17,18 +17,31 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterFormState extends State<RegisterScreen> {
+  late TextEditingController nicknameTextEditingController;
+  late TextEditingController loginTextEditingController;
+  late TextEditingController passwordTextEditingController;
+
+  @override
+  void initState() {
+    super.initState();
+    final logAndRegRead = context.read<LoginAndRegisterProvider>();
+    nicknameTextEditingController = TextEditingController(text: logAndRegRead.nickname);
+    loginTextEditingController = TextEditingController(text: logAndRegRead.login);
+    passwordTextEditingController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    nicknameTextEditingController.dispose();
+    loginTextEditingController.dispose();
+    passwordTextEditingController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final socketRead = context.read<SocketProvider>();
-    final socketWatch = context.watch<SocketProvider>();
-    final registerWatch = context.watch<RegisterProvider>();
-    final registerRead = context.read<RegisterProvider>();
-    final nicknameTextEditingController =
-        TextEditingController(text: registerWatch.nickname);
-    final loginTextEditingController =
-        TextEditingController(text: registerWatch.login);
-    final passwordTextEditingController =
-        TextEditingController(text: registerWatch.password);
+    final logAndRegRead = context.read<LoginAndRegisterProvider>();
 
     return GestureDetector(
       onTap: () {
@@ -58,22 +71,22 @@ class _RegisterFormState extends State<RegisterScreen> {
                       floatingLabelBehavior: FloatingLabelBehavior.always,
                     ),
                   ),
-                  Selector<RegisterProvider, String>(
-                      selector: (_, nicknameWatch) => nicknameWatch.errorNickname,
+                  Selector<LoginAndRegisterProvider, String>(
+                      selector: (_, nickname) => nickname.errorNickname,
                       builder: (_, errorNickname, __) => errorNickname != ""
                           ? Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            const SizedBox(width: 20),
-                            Text(
-                              errorNickname,
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                          ],
-                        ),
-                      )
+                              padding: const EdgeInsets.all(4),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  const SizedBox(width: 20),
+                                  Text(
+                                    errorNickname,
+                                    style: const TextStyle(color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            )
                           : Container()),
                   const SizedBox(height: 30),
                   TextField(
@@ -84,22 +97,22 @@ class _RegisterFormState extends State<RegisterScreen> {
                       floatingLabelBehavior: FloatingLabelBehavior.always,
                     ),
                   ),
-                  Selector<RegisterProvider, String>(
-                      selector: (_, loginWatch) => loginWatch.errorLogin,
+                  Selector<LoginAndRegisterProvider, String>(
+                      selector: (_, login) => login.errorLogin,
                       builder: (_, errorLogin, __) => errorLogin != ""
                           ? Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            const SizedBox(width: 20),
-                            Text(
-                              errorLogin,
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                          ],
-                        ),
-                      )
+                              padding: const EdgeInsets.all(4),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  const SizedBox(width: 20),
+                                  Text(
+                                    errorLogin,
+                                    style: const TextStyle(color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            )
                           : Container()),
                   const SizedBox(height: 30),
                   TextField(
@@ -111,34 +124,31 @@ class _RegisterFormState extends State<RegisterScreen> {
                       floatingLabelBehavior: FloatingLabelBehavior.always,
                     ),
                   ),
-                  Selector<RegisterProvider, String>(
-                      selector: (_, user) => user.errorPassword,
+                  Selector<LoginAndRegisterProvider, String>(
+                      selector: (_, password) => password.errorPassword,
                       builder: (_, errorPassword, __) => errorPassword != ""
                           ? Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            const SizedBox(width: 20),
-                            Text(
-                              errorPassword,
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                          ],
-                        ),
-                      )
+                              padding: const EdgeInsets.all(4),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  const SizedBox(width: 20),
+                                  Text(
+                                    errorPassword,
+                                    style: const TextStyle(color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            )
                           : Container()),
                   const SizedBox(height: 30),
                   Padding(
                     padding: const EdgeInsets.only(top: 8, bottom: 30),
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        registerRead
+                        logAndRegRead
                             .setNickname(nicknameTextEditingController.text);
-                        registerRead.setLogin(loginTextEditingController.text);
-                        registerRead
-                            .setPassword(passwordTextEditingController.text);
-                        socketRead.setContext(context);
+                        logAndRegRead.setLogin(loginTextEditingController.text);
 
                         bool nicknameEmpty = true;
                         bool loginEmpty = true;
@@ -147,33 +157,33 @@ class _RegisterFormState extends State<RegisterScreen> {
                         if (nicknameTextEditingController.text
                             .trim()
                             .isNotEmpty) {
-                          registerRead.setNicknameError("");
+                          logAndRegRead.setNicknameError("");
                           nicknameEmpty = false;
                         } else {
-                          registerRead.setNicknameError("Введите никнейм");
+                          logAndRegRead.setNicknameError("Введите никнейм");
                         }
 
                         if (loginTextEditingController.text.trim().isNotEmpty) {
-                          registerRead.setLoginError("");
+                          logAndRegRead.setLoginError("");
                           loginEmpty = false;
                         } else {
-                          registerRead.setLoginError("Введите логин");
+                          logAndRegRead.setLoginError("Введите логин");
                         }
 
                         if (passwordTextEditingController.text
                             .trim()
                             .isNotEmpty) {
-                          registerRead.setPasswordError("");
+                          logAndRegRead.setPasswordError("");
                           passwordEmpty = false;
                         } else {
-                          registerRead.setPasswordError("Введите пароль");
+                          logAndRegRead.setPasswordError("Введите пароль");
                         }
 
                         if (!loginEmpty && !passwordEmpty && !nicknameEmpty) {
                           dynamic request = {
                             "task": "new",
                             "request": {
-                              "nickname" : nicknameTextEditingController.text,
+                              "nickname": nicknameTextEditingController.text,
                               "login": loginTextEditingController.text,
                               "password": passwordTextEditingController.text
                             }
@@ -193,10 +203,9 @@ class _RegisterFormState extends State<RegisterScreen> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      registerRead.setNickname(nicknameTextEditingController.text);
-                      registerRead.setLogin(loginTextEditingController.text);
-                      registerRead
-                          .setPassword(passwordTextEditingController.text);
+                      logAndRegRead
+                          .setNickname(nicknameTextEditingController.text);
+                      logAndRegRead.setLogin(loginTextEditingController.text);
                       Navigator.pushNamedAndRemoveUntil(
                           context, SignInScreen.routeName, (route) => false);
                     },

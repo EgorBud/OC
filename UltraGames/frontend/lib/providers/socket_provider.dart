@@ -13,15 +13,7 @@ import 'package:frontend/screens/waiting_room.dart';
 import 'package:frontend/services/navigation_service.dart';
 
 class SocketProvider extends ChangeNotifier {
-  Socket? socket;
-  dynamic _serverResponse;
-  bool socketConnected = false;
-  int socketReconnectAttempts = 0;
-
-  BuildContext? _context;
-
-  dynamic get serverResponse => _serverResponse;
-
+  // tic tac toe
   List<String> board = ["", "", "", "", "", "", "", "", ""];
 
   String myToken = "T";
@@ -35,12 +27,23 @@ class SocketProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // chat
   List<Message> get messages => _messages;
 
   final List<Message> _messages = [];
 
   bool notify = false;
   int countMessage = 0;
+
+  // socket connection
+  Socket? socket;
+  dynamic _serverResponse;
+  bool socketConnected = false;
+  int socketReconnectAttempts = 0;
+
+  BuildContext? _context;
+
+  dynamic get serverResponse => _serverResponse;
 
   void notifyCheck() {
     notify = false;

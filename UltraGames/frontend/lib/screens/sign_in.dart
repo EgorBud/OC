@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/providers/login_provider.dart';
+import 'package:frontend/providers/login_and_register_provider.dart';
 import 'package:frontend/providers/socket_provider.dart';
 import 'package:frontend/screens/register.dart';
 import 'package:provider/provider.dart';
@@ -17,20 +17,28 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignFormState extends State<SignInScreen> {
+  late TextEditingController loginTextEditingController;
+  late TextEditingController passwordTextEditingController;
+
   @override
   void initState() {
     super.initState();
+    final logAndRegRead = context.read<LoginAndRegisterProvider>();
+    loginTextEditingController = TextEditingController(text: logAndRegRead.login);
+    passwordTextEditingController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    loginTextEditingController.dispose();
+    passwordTextEditingController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final socketRead = context.read<SocketProvider>();
-    final loginRead = context.read<LoginProvider>();
-    final loginWatch = context.watch<LoginProvider>();
-    final loginTextEditingController =
-        TextEditingController(text: loginWatch.login);
-    final passwordTextEditingController =
-        TextEditingController(text: loginWatch.password);
+    final logAndRegRead = context.read<LoginAndRegisterProvider>();
 
     return GestureDetector(
       onTap: () {
@@ -60,8 +68,8 @@ class _SignFormState extends State<SignInScreen> {
                       floatingLabelBehavior: FloatingLabelBehavior.always,
                     ),
                   ),
-                  Selector<LoginProvider, String>(
-                      selector: (_, loginWatch) => loginWatch.errorLogin,
+                  Selector<LoginAndRegisterProvider, String>(
+                      selector: (_, login) => login.errorLogin,
                       builder: (_, errorLogin, __) => errorLogin != ""
                           ? Padding(
                               padding: const EdgeInsets.all(4),
@@ -87,8 +95,8 @@ class _SignFormState extends State<SignInScreen> {
                       floatingLabelBehavior: FloatingLabelBehavior.always,
                     ),
                   ),
-                  Selector<LoginProvider, String>(
-                      selector: (_, user) => user.errorPassword,
+                  Selector<LoginAndRegisterProvider, String>(
+                      selector: (_, password) => password.errorPassword,
                       builder: (_, errorPassword, __) => errorPassword != ""
                           ? Padding(
                               padding: const EdgeInsets.all(4),
@@ -109,27 +117,25 @@ class _SignFormState extends State<SignInScreen> {
                     padding: const EdgeInsets.only(top: 8, bottom: 30),
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        loginRead.setLogin(loginTextEditingController.text);
-                        loginRead
-                            .setPassword(passwordTextEditingController.text);
+                        logAndRegRead.setLogin(loginTextEditingController.text);
                         socketRead.setContext(context);
 
                         bool loginEmpty = true;
                         bool passwordEmpty = true;
                         if (loginTextEditingController.text.trim().isNotEmpty) {
-                          loginRead.setLoginError("");
+                          logAndRegRead.setLoginError("");
                           loginEmpty = false;
                         } else {
-                          loginRead.setLoginError("Введите логин");
+                          logAndRegRead.setLoginError("Введите логин");
                         }
 
                         if (passwordTextEditingController.text
                             .trim()
                             .isNotEmpty) {
-                          loginRead.setPasswordError("");
+                          logAndRegRead.setPasswordError("");
                           passwordEmpty = false;
                         } else {
-                          loginRead.setPasswordError("Введите пароль");
+                          logAndRegRead.setPasswordError("Введите пароль");
                         }
 
                         if (!loginEmpty && !passwordEmpty) {
@@ -155,8 +161,7 @@ class _SignFormState extends State<SignInScreen> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      loginRead.setLogin(loginTextEditingController.text);
-                      loginRead.setPassword(passwordTextEditingController.text);
+                      logAndRegRead.setLogin(loginTextEditingController.text);
                       Navigator.pushNamedAndRemoveUntil(
                           context, RegisterScreen.routeName, (route) => false);
                     },
