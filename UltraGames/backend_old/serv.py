@@ -3,7 +3,7 @@ import json
 import sqlite3 as sl
 import asyncio
 
-HOST='0.0.0.0'
+HOST='192.168.1.76'
 PORT =3003
 
 con = sl.connect('./db/users.sql')

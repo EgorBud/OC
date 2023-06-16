@@ -165,6 +165,7 @@ class SocketProvider extends ChangeNotifier {
           );
           notifyListeners();
         } else if (_serverResponse["task"] == "leave") {
+          board = ["", "", "", "", "", "", "", "", ""];
           navigationService.navigateToAndRemove(HomeScreen.routeName);
         } else {
           showErrorMessage(_context!, _serverResponse["response"]["body"]);
