@@ -227,7 +227,7 @@ async def tictactoe(conn1, conn2):
         try:
             await loop.sock_sendall(conn1, str.encode(json.dumps(response)))
             await loop.sock_sendall(conn2, str.encode(json.dumps(response)))
-            q = await asyncio.wait_for(loop.sock_recv(conn1, 1024), timeout=10)
+            q = await asyncio.wait_for(loop.sock_recv(conn1, 1024), timeout=1)
             print(q)
             #print(json.loads(await asyncio.wait_for (loop.sock_recv(conn1, 1024), timeout=3).decode('utf8')))
             if (q==None):
