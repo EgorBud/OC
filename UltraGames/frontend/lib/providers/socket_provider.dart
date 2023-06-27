@@ -122,6 +122,15 @@ class SocketProvider extends ChangeNotifier {
           } else {
             showErrorMessage(_context!, _serverResponse["response"]["body"]);
           }
+        }
+        //ffffffffffffffffffffffffffffffffffffffffff
+        else if (_serverResponse["task"] == "disconnected") {
+          if (_serverResponse["response"]["code"] == 200) {
+            showWarningMessage(
+                _context!, _serverResponse["response"]["body"]["message"]);
+          } else {
+            showErrorMessage(_context!, _serverResponse["response"]["body"]);
+          }
         } else if (_serverResponse["task"] == "start") {
           if (_serverResponse["response"]["code"] == 200) {
             myToken = _serverResponse["response"]["body"]["player_token"];

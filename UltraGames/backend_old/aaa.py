@@ -4,39 +4,91 @@ import socket
 HOST = '127.0.0.1'
 PORT = 3003
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.connect((HOST, PORT))
-    i=0
 
-
-    while(1):
-        data = s.recv(1024).decode('utf8')
-        print(data)
-        if not data:
-            s.close()
-            break
-        try:
-            message = json.loads(data)
-            print(message['show'])
-            if(message['task']=='get'):
-                alias = input()
-                if(alias in '123456789'):
-                    m = {"task": "game","choise":alias, "log": "man", "pas": "123", "key":'key'}
-                else:
-                    m = {"task": "chat", "show": alias, "log": "man", "pas": "123", "key": 'key'}
-                data = json.dumps(m)
-                s.sendall((bytes(data, encoding="utf-8")))
-                
-            if (message['task']== ('wait')):
-                data1=message
-                while(data1['task']!='stop'):
+    def read():
+        while 1:
+            data = json.loads(s.recv(1024).decode('utf8'))
+            print(data)
+            if (data["task"] == ('chat')):
+                print(data["show"])
+            if (data["task"] == ("game")):
+                print("change board and let next move")
+                print(data["move"])
+            if (data["task"] == ("show")):
+                print("result:")
+                print(data["result"])
+                if(data["result"]==1):
+                    m = {"task": "add", "log": user[0]}
+                    data1 = json.dumps(m)
+                    s.sendall((bytes(data1, encoding="utf-8")))
                     data1 = json.loads(s.recv(1024).decode('utf8'))
                     print(data1)
-                continue
-            if (message['task']== ('end')):
-                s.close()
+                else:
+                    m = {"task": "loh", "log": user[0]}
+                    data1 = json.dumps(m)
+                    s.sendall((bytes(data1, encoding="utf-8")))
+                    print(data1)
+            if(data['task']=="disconnected"):
+                m = {"task": "add", "log": user[0]}
+                data1 = json.dumps(m)
+                s.sendall((bytes(data1, encoding="utf-8")))
+                data1 = json.loads(s.recv(1024).decode('utf8'))
+                print(data1)
+            if (data["task"] == ("end")):
                 break
-        except Exception as e:
-            print(e)
-        if (i==1):
-            i = 2
-            continue
+            if not data:
+                break
+    s.connect((HOST, PORT))
+    data = s.recv(1024).decode('utf8')
+    i=0#log in or new user
+
+    if(i==1):
+        i = 0
+        while(i!=1):
+
+            #newuser
+            login="man4"
+            password="123"
+            #login=input()
+            #password=input()
+            m = {"task": "new", "log": login, "pas": password}
+            data = json.dumps(m)
+            s.sendall((bytes(data, encoding="utf-8")))
+            data = json.loads(s.recv(1024).decode('utf8'))
+            print(data)
+            i=data["state"]
+            if(i!=1):
+                print(i)
+
+    while(i!=1):
+        #olduser
+        login="man"
+        password="123"
+        #login=input()
+        #password=input()
+        m = {"task": "load", "log": login, "pas": password}
+        data = json.dumps(m)
+        s.sendall((bytes(data, encoding="utf-8")))
+        data = json.loads(s.recv(1024).decode('utf8'))
+        i=data["state"]
+        if(i!=1):
+            print(i)
+    user = data["user"]
+    print(user)
+    g="fun"
+    m = {"task": g, "key": 'key'}
+    data = json.dumps(m)
+    s.setblocking(True)
+    try:
+        q=s.sendall((bytes(data, encoding="utf-8")))
+        print(q)
+        print("D")
+    except:
+        print(1)
+
+    try:
+        data = json.loads(s.recv(1024).decode('utf8'))
+        print(data)
+    except:
+        print(2)
+    g=input()

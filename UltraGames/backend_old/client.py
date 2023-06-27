@@ -3,7 +3,7 @@ import json
 import socket
 
 HOST = '127.0.0.1'
-PORT = 6666
+PORT = 3003
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     def read():
         while 1:
@@ -28,7 +28,12 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     data1 = json.dumps(m)
                     s.sendall((bytes(data1, encoding="utf-8")))
                     print(data1)
-
+            if(data['task']=="disconnected"):
+                m = {"task": "add", "log": user[0]}
+                data1 = json.dumps(m)
+                s.sendall((bytes(data1, encoding="utf-8")))
+                data1 = json.loads(s.recv(1024).decode('utf8'))
+                print(data1)
             if (data["task"] == ("end")):
                 break
             if not data:
