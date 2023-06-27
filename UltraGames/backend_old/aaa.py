@@ -3,6 +3,16 @@ import socket
 
 HOST = '127.0.0.1'
 PORT = 3003
+
+q=[6]
+q[0]=0
+q.append(99)
+s=socket.socket()
+q.append(s)
+
+print(q)
+
+'''
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     def read():
@@ -92,3 +102,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     except:
         print(2)
     g=input()
+'''

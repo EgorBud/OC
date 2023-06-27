@@ -6,8 +6,15 @@ import asyncio
 HOST = '127.0.0.1'
 PORT = 6666
 
+count=8
+active=False
+
 con = sql.connect('./db/users.sql')
 cursor = con.cursor()
+
+gamers=[]
+gamers.clear()
+
 rpcwaiters= {'dict': socket}
 rpcwaiters.clear()
 
@@ -26,6 +33,81 @@ class user:
     password: str
     tscore: int
     rpsscore: int
+
+
+async def round(player1, player2):
+    loop = asyncio.get_event_loop()
+    res=0
+    while(res==0):
+        await loop.sock_sendall(player1, str.encode(json.dumps({
+            "task": "start",
+            "response": {
+                "code": 200,
+                "body": {
+                    "message": "opponent found",
+                    "player_token": "X",
+                    "im_tapped": True,
+                    "game_start": True
+                }
+            }
+        })))
+        await loop.sock_sendall(player2, str.encode(json.dumps({
+            "task": "start",
+            "response": {
+                "code": 200,
+                "body": {
+                    "message": "opponent found",
+                    "player_token": "O",
+                    "im_tapped": False,
+                    "game_start": True
+                }
+            }
+        })))
+        res = await asyncio.wait_for(tictactoe(player1, player2), timeout=None)
+    return (res+1)/2
+async def tourmroom(conn, request):
+    loop = asyncio.get_event_loop()
+    global gamers
+    global active
+    global count
+    gamers.append(conn)
+    if(active==True):
+        await loop.sock_sendall(conn, str.encode(json.dumps({"task": "sorry", "response": {"code" : 200, "body": "tourment is currently happenng try later"}})))
+    waiting=gamers.count()
+    if waiting<count:
+        await loop.sock_sendall(conn, str.encode(json.dumps({"task": "wait", "response": {"code" : 200, "body": "waiting for opponents", "waiting":waiting}})))
+
+        asyncio.current_task().cancel()
+
+    else:
+        active=True
+        while(waiting>1):
+            tasks=[]
+            for i in range(waiting/2):
+                player1=gamers[i*2]
+                player2=gamers[i*2+1]
+                tasks.append(asyncio.create_task(round(player1, player2)))
+            o=await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
+            for i in o:
+                gamers.pop(i)
+            waiting=gamers.count()
+        conn=gamers[0]
+        m1 = {
+            "task": "end",
+            "response": {
+                "code": 200,
+                "body": {
+                    "im_tapped": False,
+                    "game_start": False,
+                    "result": 3,
+                    "message": "Ты выйграл турни"
+                }
+            }
+        }
+        await loop.sock_sendall(conn, str.encode(str(json.dumps(m1))))
+        await asyncio.sleep(0.2)
+        await loop.sock_sendall(conn, str.encode(json.dumps({"task": 'leave', 'show': 'exit from game'})))
+
 
 async def rpcpoints(conn, log):
     loop = asyncio.get_event_loop()
@@ -98,11 +180,6 @@ async def rpcroom(conn, j):
         await loop.sock_sendall(player, str.encode(json.dumps({"task": 'stop', 'show': 'opponent found'})))
         await asyncio.wait_for(rpc(player, conn), timeout=None)
         loop.create_task(client_handler(player))
-
-
-
-
-
 
 
 
@@ -231,14 +308,17 @@ async def tictactoe(conn1, conn2):
             print(q)
             #print(json.loads(await asyncio.wait_for (loop.sock_recv(conn1, 1024), timeout=3).decode('utf8')))
             if (q==None):
+                res=1
                 conn=conn2
             else:
                 print("error")
         except asyncio.TimeoutError as e:
             print('timr')
+            res=-1
             conn=conn1
         except Exception as e:
             print(e)
+            res=1
             conn=conn2
             print(2)
         await asyncio.sleep(0.2)
@@ -249,7 +329,7 @@ async def tictactoe(conn1, conn2):
                 "body": {
                     "im_tapped": False,
                     "game_start": False,
-                    "result": 1,
+                    "result": res,
                     "message": "Ты выйграл"
                 }
             }
@@ -299,7 +379,7 @@ async def tictactoe(conn1, conn2):
         await loop.sock_sendall(conn2, str.encode(str(json.dumps(m1))))
         tasks = [asyncio.create_task(chat(conn2, conn1)), asyncio.create_task(chat(conn1, conn2))]
         await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-
+    return res
 
 
 async def tic(conn1, conn2):
@@ -423,6 +503,7 @@ async def load(conn, request):
         }
         await loop.sock_sendall(conn, bytes(json.dumps(response), encoding="utf-8"))
 
+
 async def client_handler(conn):
     loop = asyncio.get_event_loop()
     while True:
@@ -438,6 +519,7 @@ async def client_handler(conn):
             conn.close()
             break
         try:
+            '''            
             if(message["task"]=="load"):
                 await load(conn, message["request"])
             elif(message["task"]=="reqest"):
@@ -449,18 +531,19 @@ async def client_handler(conn):
             else:
                 await loop.sock_sendall(conn, str.encode(
                     json.dumps({"task": "", "response": {"code": 400, "body": "No such command"}})))
-
-            ''' match message["task"]:
+            '''
+            match message["task"]:
                 case "load":
                     await load(conn, message["request"])
                 case "new":
                     await new(conn, message["request"])
                 case "ticroom":
                     await ticroom(conn, message["request"])
-
+                case "tourmroom":
+                    await tourmroom(conn, message["requrst"])
                 case _:
                     await loop.sock_sendall(conn, str.encode(json.dumps({"task" : "", "response" : {"code" : 400, "body" : "No such command"}})))
-            '''
+
         except Exception as e:
             print(e)
             print('e')
