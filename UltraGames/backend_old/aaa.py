@@ -14,7 +14,11 @@ async def run():
     tasks.append(asyncio.create_task(lol(1)))
     tasks.append(asyncio.create_task(lol(2)))
     tasks.append(asyncio.create_task(lol(3)))
+    try:
+        1+1
 
+    except:
+        2*2
     #print(tasks)
     o = (await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED))
     print(len(o[0]))
@@ -22,7 +26,9 @@ async def run():
     for i in q:
 
         print(i.result())
-    print(q)
+    q=b''
+    print(q==b'')
+
 asyncio.run(run())
 '''
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

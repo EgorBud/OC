@@ -132,7 +132,16 @@ class SocketProvider extends ChangeNotifier {
           } else {
             showErrorMessage(_context!, _serverResponse["response"]["body"]);
           }
-        } else if (_serverResponse["task"] == "start") {
+        }
+        else if (_serverResponse["task"] == "sorry") {
+          if (_serverResponse["response"]["code"] == 200) {
+            showWarningMessage(
+                _context!, _serverResponse["response"]["body"]["message"]);
+          } else {
+            showErrorMessage(_context!, _serverResponse["response"]["body"]);
+          }
+        }
+        else if (_serverResponse["task"] == "start") {
           if (_serverResponse["response"]["code"] == 200) {
             myToken = _serverResponse["response"]["body"]["player_token"];
             imTapped = _serverResponse["response"]["body"]["im_tapped"];
