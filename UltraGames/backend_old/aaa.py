@@ -1,17 +1,29 @@
-import json
 import socket
+import json
+import sqlite3 as sql
+import asyncio
+async def lol(a):
+    await asyncio.sleep(1)
+    return a
 
 HOST = '127.0.0.1'
 PORT = 3003
 
-q=[6]
-q[0]=0
-q.append(99)
-s=socket.socket()
-q.append(s)
+async def run():
+    tasks = []
+    tasks.append(asyncio.create_task(lol(1)))
+    tasks.append(asyncio.create_task(lol(2)))
+    tasks.append(asyncio.create_task(lol(3)))
 
-print(q)
+    #print(tasks)
+    o = (await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED))
+    print(len(o[0]))
+    q=o[0]
+    for i in q:
 
+        print(i.result())
+    print(q)
+asyncio.run(run())
 '''
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
