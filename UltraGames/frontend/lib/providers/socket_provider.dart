@@ -118,11 +118,30 @@ class SocketProvider extends ChangeNotifier {
           }
         } else if (_serverResponse["task"] == "wait") {
           if (_serverResponse["response"]["code"] == 200) {
+            board = ["", "", "", "", "", "", "", "", ""];
             navigationService.navigateToAndRemove(WaitingRoomScreen.routeName);
           } else {
             showErrorMessage(_context!, _serverResponse["response"]["body"]);
           }
-        } else if (_serverResponse["task"] == "start") {
+        }
+        //ffffffffffffffffffffffffffffffffffffffffff
+        else if (_serverResponse["task"] == "disconnected") {
+          if (_serverResponse["response"]["code"] == 200) {
+            showWarningMessage(
+                _context!, _serverResponse["response"]["body"]["message"]);
+          } else {
+            showErrorMessage(_context!, _serverResponse["response"]["body"]);
+          }
+        }
+        else if (_serverResponse["task"] == "sorry") {
+          if (_serverResponse["response"]["code"] == 200) {
+            showWarningMessage(
+                _context!, _serverResponse["response"]["body"]["message"]);
+          } else {
+            showErrorMessage(_context!, _serverResponse["response"]["body"]);
+          }
+        }
+        else if (_serverResponse["task"] == "start") {
           if (_serverResponse["response"]["code"] == 200) {
             myToken = _serverResponse["response"]["body"]["player_token"];
             imTapped = _serverResponse["response"]["body"]["im_tapped"];

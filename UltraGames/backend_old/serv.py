@@ -3,7 +3,8 @@ import json
 import sqlite3 as sl
 import asyncio
 
-HOST='192.168.1.76'
+#HOST='192.168.1.76'
+HOST='127.0.0.1'
 PORT =3003
 
 con = sl.connect('./db/users.sql')
@@ -142,20 +143,35 @@ async def tic( conn1, conn2):
 
 async def tictactoe(conn1, conn2):
     loop = asyncio.get_event_loop()
-    res=(await tic(conn1, conn2))
-    m1 = {"task": 'end', "result": res}
-    m2 = {"task": 'end', "result": -res}
-    await loop.sock_sendall(conn1, str.encode((str(json.dumps(m2)))))
-    await loop.sock_sendall(conn2, str.encode(str(json.dumps(m1))))
-    data1 = json.loads((await loop.sock_recv(conn1, 1024)).decode('utf8'))
-    data2 = json.loads((await loop.sock_recv(conn2, 1024)).decode('utf8'))
-    print(data2)
-    print(data1)
-    if(data2["task"]=="add"):
-        await tpoints(conn2, data2["log"])
-    if(data1["task"]=="add"):
-        await tpoints(conn1, data1["log"])
-    await asyncio.gather(chat(conn1, conn2), chat(conn2, conn1))
+    try:
+        res=(await tic(conn1, conn2))
+    except Exception as e:
+        print(e)
+        response = {
+            "task": "disconnected",
+            "response": {
+                "code": 400,
+                "body": "lol"
+            }
+        }
+        try:
+            await loop.sock_sendall(conn1, str.encode(json.dumps(response)))
+        except:
+            await loop.sock_sendall(conn1, str.encode(json.dumps(response)))
+    else:
+        m1 = {"task": 'end', "result": res}
+        m2 = {"task": 'end', "result": -res}
+        await loop.sock_sendall(conn1, str.encode((str(json.dumps(m2)))))
+        await loop.sock_sendall(conn2, str.encode(str(json.dumps(m1))))
+        data1 = json.loads((await loop.sock_recv(conn1, 1024)).decode('utf8'))
+        data2 = json.loads((await loop.sock_recv(conn2, 1024)).decode('utf8'))
+        print(data2)
+        print(data1)
+        if(data2["task"]=="add"):
+            await tpoints(conn2, data2["log"])
+        if(data1["task"]=="add"):
+            await tpoints(conn1, data1["log"])
+        await asyncio.gather(chat(conn1, conn2), chat(conn2, conn1))
     
 async def new(conn, data):
     loop = asyncio.get_event_loop()
@@ -311,7 +327,42 @@ async def ticroom(conn,j):
 
 
 async def fun(conn, j):
+
+    loop = asyncio.get_event_loop()
     print('ok')
+    await loop.sock_sendall(conn, str.encode(json.dumps({"task": 'ok', 'show': ' found'})))
+    await asyncio.sleep(1)
+    try:
+
+       q= await asyncio.wait_for (loop.sock_recv(conn, 1024), timeout=10)
+    except asyncio.TimeoutError as e:
+        print(e)
+        print('timr')
+    except Exception as e:
+        print(e)
+        print('bad')
+    else:
+        print('good')
+        print(q)
+
+async def fun2(conn, j):
+
+
+    loop = asyncio.get_event_loop()
+    print('ok')
+
+    await asyncio.sleep(1)
+    try:
+
+       q= await asyncio.wait_for (loop.sock_recv(conn, 1024), timeout=3)
+    except Exception as e:
+        print(e)
+
+        print('bad2')
+    else:
+        print('good2')
+        print(q)
+    await loop.sock_sendall(conn, str.encode(json.dumps({"task": 'ok', 'show': ' found'})))
 async def skip(conn, j):
     print('nok')
 
