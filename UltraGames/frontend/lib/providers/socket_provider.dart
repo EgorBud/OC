@@ -16,6 +16,8 @@ import 'package:frontend/services/navigation_service.dart';
 class SocketProvider extends ChangeNotifier {
 
   bool? firstPlayer;
+  int chooseIndex = 0;
+
 
   // login
   String? login;
@@ -236,12 +238,15 @@ class SocketProvider extends ChangeNotifier {
         } else if (_serverResponse["task"] == "wait_rps") {
           navigationService.navigateToAndRemove(WaitingRoomScreen.routeName);
         } else if (_serverResponse["task"] == "start_rps") {
+          gameStart = true;
           firstPlayer = _serverResponse["first_player"];
           notifyListeners();
           navigationService.navigateToAndRemove(ScisorsScreen.routeName);
         } else if (_serverResponse["task"] == "get") {
           print(_serverResponse["show"]);
         } else if (_serverResponse["task"] == "show") {
+          gameStart = false;
+
           int result = _serverResponse["result"];
           print(result);
           print(firstPlayer);
