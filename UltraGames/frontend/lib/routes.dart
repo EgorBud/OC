@@ -5,9 +5,11 @@ import 'package:frontend/screens/enter_the_room.dart';
 import 'package:frontend/screens/home.dart';
 import 'package:frontend/screens/random_game.dart';
 import 'package:frontend/screens/register.dart';
+import 'package:frontend/screens/scisors.dart';
 import 'package:frontend/screens/sign_in.dart';
 import 'package:frontend/screens/ticktacktoe.dart';
 import 'package:frontend/screens/waiting_room.dart';
+
 
 final Map<String, WidgetBuilder> routes = {
   SignInScreen.routeName: (context) => const SignInScreen(),
@@ -18,5 +20,6 @@ final Map<String, WidgetBuilder> routes = {
   EnterTheRoomScreen.routeName: (context) => EnterTheRoomScreen(),
   RandomGameScreen.routeName: (context) => RandomGameScreen(),
   TickTackToeScreen.routeName: (context) => TickTackToeScreen(),
+  ScisorsScreen.routeName: (context) => ScisorsScreen(),
   ChatScreen.routeName: (context) => const ChatScreen(),
 };

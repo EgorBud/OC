@@ -150,6 +150,8 @@ class _RegisterFormState extends State<RegisterScreen> {
                             .setNickname(nicknameTextEditingController.text);
                         logAndRegRead.setLogin(loginTextEditingController.text);
 
+                        socketRead.setLogin(loginTextEditingController.text);
+
                         bool nicknameEmpty = true;
                         bool loginEmpty = true;
                         bool passwordEmpty = true;

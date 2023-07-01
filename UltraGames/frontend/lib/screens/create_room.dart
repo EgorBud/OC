@@ -6,7 +6,7 @@ import 'package:frontend/providers/socket_provider.dart';
 import 'package:provider/provider.dart';
 
 class CreateRoomScreen extends StatefulWidget {
-  CreateRoomScreen({super.key});
+  const CreateRoomScreen({super.key});
 
   static String routeName = "/create_room";
 

@@ -8,11 +8,30 @@ import 'package:frontend/constants.dart';
 import 'package:frontend/locator.dart';
 import 'package:frontend/models/message.dart';
 import 'package:frontend/screens/home.dart';
+import 'package:frontend/screens/scisors.dart';
 import 'package:frontend/screens/ticktacktoe.dart';
 import 'package:frontend/screens/waiting_room.dart';
 import 'package:frontend/services/navigation_service.dart';
 
 class SocketProvider extends ChangeNotifier {
+
+  bool? firstPlayer;
+  int chooseIndex = 0;
+
+
+  // login
+  String? login;
+
+  void setLogin(String login) {
+    this.login = login;
+    notifyListeners();
+  }
+
+  // main characteristic
+  String? nickname = "?";
+  int ticScore = 1;
+  int rpsScore = 3;
+
   // tic tac toe
   List<String> board = ["", "", "", "", "", "", "", "", ""];
 
@@ -93,7 +112,7 @@ class SocketProvider extends ChangeNotifier {
 
   Future<void> connect() async {
     try {
-      socket = await Socket.connect(HOST, PORT);
+      socket = await Socket.connect(host, port);
       socket!.listen((Uint8List data) {
         socketConnected = true;
         socketReconnectAttempts = 0;
@@ -106,12 +125,18 @@ class SocketProvider extends ChangeNotifier {
 
         if (_serverResponse["task"] == "load") {
           if (_serverResponse["response"]["code"] == 200) {
+            nickname = _serverResponse["response"]["nickname"];
+            ticScore = _serverResponse["response"]["tic_score"];
+            rpsScore = _serverResponse["response"]["rps_score"];
             navigationService.navigateToAndRemove(HomeScreen.routeName);
           } else {
             showErrorMessage(_context!, _serverResponse["response"]["body"]);
           }
         } else if (_serverResponse["task"] == "new") {
           if (_serverResponse["response"]["code"] == 200) {
+            nickname = _serverResponse["response"]["nickname"];
+            ticScore = 0;
+            rpsScore = 0;
             navigationService.navigateToAndRemove(HomeScreen.routeName);
           } else {
             showErrorMessage(_context!, _serverResponse["response"]["body"]);
@@ -132,16 +157,14 @@ class SocketProvider extends ChangeNotifier {
           } else {
             showErrorMessage(_context!, _serverResponse["response"]["body"]);
           }
-        }
-        else if (_serverResponse["task"] == "sorry") {
+        } else if (_serverResponse["task"] == "sorry") {
           if (_serverResponse["response"]["code"] == 200) {
             showWarningMessage(
                 _context!, _serverResponse["response"]["body"]["message"]);
           } else {
             showErrorMessage(_context!, _serverResponse["response"]["body"]);
           }
-        }
-        else if (_serverResponse["task"] == "start") {
+        } else if (_serverResponse["task"] == "start") {
           if (_serverResponse["response"]["code"] == 200) {
             myToken = _serverResponse["response"]["body"]["player_token"];
             imTapped = _serverResponse["response"]["body"]["im_tapped"];
@@ -167,13 +190,32 @@ class SocketProvider extends ChangeNotifier {
             notifyListeners();
 
             print(_serverResponse["response"]["body"]["result"]);
-            if (_serverResponse["response"]["body"]["result"] == 0) {
+
+            dynamic message = {
+              "task": "add_tscore",
+              "login": login,
+            };
+
+            int result = _serverResponse["response"]["body"]["result"];
+            if (result == 0) {
               showWarningMessage(
                   _context!, _serverResponse["response"]["body"]["message"]);
-            } else {
+            } else if (result == -1 && myToken == "X") {
               showDoneMessage(
                   _context!, _serverResponse["response"]["body"]["message"]);
+              write(jsonEncode(message));
+            } else if (result == -1 && myToken == "O") {
+              showErrorMessage(
+                  _context!, _serverResponse["response"]["body"]["message"]);
+            } else if (result == 1 && myToken == "X") {
+              showErrorMessage(
+                  _context!, _serverResponse["response"]["body"]["message"]);
+            } else if (result == 1 && myToken == "O") {
+              showDoneMessage(
+                  _context!, _serverResponse["response"]["body"]["message"]);
+              write(jsonEncode(message));
             }
+            notifyListeners();
           }
         } else if (_serverResponse["task"] == "chat") {
           addMessage(
@@ -185,7 +227,60 @@ class SocketProvider extends ChangeNotifier {
           notifyListeners();
         } else if (_serverResponse["task"] == "leave") {
           board = ["", "", "", "", "", "", "", "", ""];
+          notifyListeners();
           navigationService.navigateToAndRemove(HomeScreen.routeName);
+        } else if (_serverResponse["state"] == 1) {
+          ticScore = _serverResponse["new_score"][0];
+          notifyListeners();
+        } else if (_serverResponse["state"] == 2) {
+          rpsScore = _serverResponse["new_score"][0];
+          notifyListeners();
+        } else if (_serverResponse["task"] == "wait_rps") {
+          navigationService.navigateToAndRemove(WaitingRoomScreen.routeName);
+        } else if (_serverResponse["task"] == "start_rps") {
+          gameStart = true;
+          firstPlayer = _serverResponse["first_player"];
+          if (firstPlayer == true) {
+            myToken = "X";
+          } else {
+            myToken = "O";
+          }
+
+          notifyListeners();
+          navigationService.navigateToAndRemove(ScisorsScreen.routeName);
+        } else if (_serverResponse["task"] == "get") {
+          print(_serverResponse["show"]);
+        } else if (_serverResponse["task"] == "show") {
+          gameStart = false;
+
+          int result = _serverResponse["result"];
+          print(result);
+          print(firstPlayer);
+
+          dynamic message = {
+            "task": "add_rps_score",
+            "login": login,
+          };
+
+          if (result == 1 && firstPlayer == true) {
+            showDoneMessage(
+                _context!, "Ты выиграл");
+            write(jsonEncode(message));
+          } else if (result == 1 && firstPlayer == false) {
+            showErrorMessage(
+                _context!, "Ты проиграл");
+          } else if (result == -1 && firstPlayer == true) {
+            showErrorMessage(
+                _context!, "Ты проиграл");
+          } else if (result == -1 && firstPlayer == false) {
+            showDoneMessage(
+                _context!, "Ты выиграл");
+            write(jsonEncode(message));
+          } else {
+            showWarningMessage(
+                _context!, "Ничья");
+          }
+          notifyListeners();
         } else {
           showErrorMessage(_context!, _serverResponse["response"]["body"]);
         }
