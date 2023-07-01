@@ -8,11 +8,15 @@ import 'package:frontend/constants.dart';
 import 'package:frontend/locator.dart';
 import 'package:frontend/models/message.dart';
 import 'package:frontend/screens/home.dart';
+import 'package:frontend/screens/scisors.dart';
 import 'package:frontend/screens/ticktacktoe.dart';
 import 'package:frontend/screens/waiting_room.dart';
 import 'package:frontend/services/navigation_service.dart';
 
 class SocketProvider extends ChangeNotifier {
+
+  bool? firstPlayer;
+
   // login
   String? login;
 
@@ -186,8 +190,8 @@ class SocketProvider extends ChangeNotifier {
             print(_serverResponse["response"]["body"]["result"]);
 
             dynamic message = {
-              "task" : "add_tscore",
-              "login" : login,
+              "task": "add_tscore",
+              "login": login,
             };
 
             int result = _serverResponse["response"]["body"]["result"];
@@ -225,6 +229,46 @@ class SocketProvider extends ChangeNotifier {
           navigationService.navigateToAndRemove(HomeScreen.routeName);
         } else if (_serverResponse["state"] == 1) {
           ticScore = _serverResponse["new_score"][0];
+          notifyListeners();
+        } else if (_serverResponse["state"] == 2) {
+          rpsScore = _serverResponse["new_score"][0];
+          notifyListeners();
+        } else if (_serverResponse["task"] == "wait_rps") {
+          navigationService.navigateToAndRemove(WaitingRoomScreen.routeName);
+        } else if (_serverResponse["task"] == "start_rps") {
+          firstPlayer = _serverResponse["first_player"];
+          notifyListeners();
+          navigationService.navigateToAndRemove(ScisorsScreen.routeName);
+        } else if (_serverResponse["task"] == "get") {
+          print(_serverResponse["show"]);
+        } else if (_serverResponse["task"] == "show") {
+          int result = _serverResponse["result"];
+          print(result);
+          print(firstPlayer);
+
+          dynamic message = {
+            "task": "add_rps_score",
+            "login": login,
+          };
+
+          if (result == 1 && firstPlayer == true) {
+            showDoneMessage(
+                _context!, "Ты выиграл");
+            write(jsonEncode(message));
+          } else if (result == 1 && firstPlayer == false) {
+            showErrorMessage(
+                _context!, "Ты проиграл");
+          } else if (result == -1 && firstPlayer == true) {
+            showErrorMessage(
+                _context!, "Ты проиграл");
+          } else if (result == -1 && firstPlayer == false) {
+            showDoneMessage(
+                _context!, "Ты выиграл");
+            write(jsonEncode(message));
+          } else {
+            showWarningMessage(
+                _context!, "Ничья");
+          }
           notifyListeners();
         } else {
           showErrorMessage(_context!, _serverResponse["response"]["body"]);

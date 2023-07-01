@@ -18,7 +18,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
 
   List<CreateRoom> rooms = [
     CreateRoom(task: "ticroom", label: "Крестики нолики"),
-    CreateRoom(task: "rpsroom", label: "Камень ножницы бумага")
+    CreateRoom(task: "rpcroom", label: "Камень ножницы бумага")
   ];
   late CreateRoom selectedItem = rooms[0];
 
