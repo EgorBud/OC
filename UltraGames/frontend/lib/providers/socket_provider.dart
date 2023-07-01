@@ -144,6 +144,7 @@ class SocketProvider extends ChangeNotifier {
         } else if (_serverResponse["task"] == "wait") {
           if (_serverResponse["response"]["code"] == 200) {
             board = ["", "", "", "", "", "", "", "", ""];
+            chooseIndex = 0;
             navigationService.navigateToAndRemove(WaitingRoomScreen.routeName);
           } else {
             showErrorMessage(_context!, _serverResponse["response"]["body"]);
