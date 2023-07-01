@@ -3,7 +3,7 @@ import json
 import sqlite3 as sql
 import asyncio
 
-HOST = '127.0.0.1'
+HOST = '0.0.0.0'
 PORT = 6666
 
 count=2
@@ -273,8 +273,8 @@ async def rpc(conn1, conn2):
     f = await asyncio.gather(loop.sock_recv(conn1, 1024), (loop.sock_recv(conn2, 1024)))
     print(f)
     res=btn_click(json.loads(f[0].decode('utf8'))["choise"],json.loads(f[1].decode('utf8'))["choise"])
-    m1 = {"task": 'show', "result":res}
-    m2 = {"task": 'show', "result":res}
+    m1 = {"task": 'show', "result":res, "game_start" : False}
+    m2 = {"task": 'show', "result":res, "game_start" : False}
     await loop.sock_sendall(conn1, str.encode(str(json.dumps(m1))))
     await loop.sock_sendall(conn2, str.encode(str(json.dumps(m2))))
     
@@ -303,8 +303,8 @@ async def rpcroom(conn, j):
     else:
         player =  rpcwaiters[key]
         rpcwaiters.pop(key)
-        await loop.sock_sendall(player, str.encode(json.dumps({"task": 'start_rps', 'show': 'opponent found', "first_player" : True})))
-        await loop.sock_sendall(conn, str.encode(json.dumps({"task": 'start_rps', 'show': 'opponent found', "first_player" : False})))
+        await loop.sock_sendall(player, str.encode(json.dumps({"task": 'start_rps', 'show': 'opponent found', "first_player" : True,  "game_start" : True})))
+        await loop.sock_sendall(conn, str.encode(json.dumps({"task": 'start_rps', 'show': 'opponent found', "first_player" : False, "game_start" : True})))
         await asyncio.wait_for(rpc(player, conn), timeout=None)
         loop.create_task(client_handler(player))
 
