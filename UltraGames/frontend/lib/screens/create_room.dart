@@ -6,7 +6,7 @@ import 'package:frontend/providers/socket_provider.dart';
 import 'package:provider/provider.dart';
 
 class CreateRoomScreen extends StatefulWidget {
-  CreateRoomScreen({super.key});
+  const CreateRoomScreen({super.key});
 
   static String routeName = "/create_room";
 
@@ -18,7 +18,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
 
   List<CreateRoom> rooms = [
     CreateRoom(task: "ticroom", label: "Крестики нолики"),
-    CreateRoom(task: "rpcroom", label: "Камень ножницы бумага")
+    CreateRoom(task: "rpsroom", label: "Камень ножницы бумага")
   ];
   late CreateRoom selectedItem = rooms[0];
 

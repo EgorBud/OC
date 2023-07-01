@@ -361,12 +361,12 @@ async def tpoints(conn, log):
             return None
         
     cursor.execute("SELECT tscore FROM users WHERE login=?", [(log)])
-    temp = (cursor.fetchall())
-    print(temp)
+    temp = cursor.fetchall()
+    print(temp[0])
     if (temp is None):
         await loop.sock_sendall(conn, bytes(json.dumps({'state': 0}), encoding="utf-8"))
         return None
-    await loop.sock_sendall(conn, bytes(json.dumps({"state": 1, 'newscore': temp}), encoding="utf-8"))
+    await loop.sock_sendall(conn, bytes(json.dumps({"state": 1, 'new_score': temp[0]}), encoding="utf-8"))
     
 async def ticroom(conn, request):
     loop = asyncio.get_event_loop()
@@ -462,13 +462,14 @@ async def tictactoe(conn1, conn2):
         print('no')
         if res == -1:
             message1 = "Ты проиграл"
-            message2 = "Ты выйграл"
+            message2 = "Ты выиграл"
         elif res == 1:
-            message1 = "Ты выйграл"
+            message1 = "Ты выиграл"
             message2 = "Ты проиграл"
         else:
             message1 = "Ничья"
             message2 = "Ничья"
+            
         m1 = {
             "task": "end",
             "response": {
@@ -497,6 +498,16 @@ async def tictactoe(conn1, conn2):
 
         await loop.sock_sendall(conn1, str.encode((str(json.dumps(m2)))))
         await loop.sock_sendall(conn2, str.encode(str(json.dumps(m1))))
+        
+        if res == -1:
+            data = json.loads((await loop.sock_recv(conn1, 1024)).decode('utf8'))
+            await tpoints(conn1, data["login"])
+        elif res == 1:
+            data = json.loads((await loop.sock_recv(conn2, 1024)).decode('utf8'))
+            await tpoints(conn2, data["login"])
+        
+        
+
         tasks = [asyncio.create_task(chat(conn2, conn1)), asyncio.create_task(chat(conn1, conn2))]
         await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
     return res
@@ -570,11 +581,12 @@ async def check_win(board):
 
 async def new(conn, request):
     loop = asyncio.get_event_loop()
+    nickname = request["nickname"]
     password = request["password"]
     login = request["login"]
 
-    sql = "INSERT INTO users (login, password) values(?, ?)"
-    data = (login, password,)
+    sql = "INSERT INTO users (nickname, login, password) values(?, ?, ?)"
+    data = (nickname, login, password,)
     with con:
         try:
             con.execute(sql, data)
@@ -582,7 +594,8 @@ async def new(conn, request):
             "task": "new",
             "response": {
                 "code" : 200,
-                "body" : "User added to db"
+                "body" : "User added to db",
+                "nickname" : nickname
                 }
             }
             await loop.sock_sendall(conn, bytes(json.dumps(response), encoding="utf-8"))
@@ -601,7 +614,7 @@ async def load(conn, request):
     loop = asyncio.get_event_loop()
     password = request["password"]
     login = request["login"]
-    cursor.execute("SELECT login, password, tscore, rpsscore FROM users WHERE login=? AND password=?", (login, password))
+    cursor.execute("SELECT nickname, login, password, tscore, rpsscore FROM users WHERE login=? AND password=?", (login, password))
     temp = cursor.fetchone()
 
     if temp is not None:
@@ -609,7 +622,10 @@ async def load(conn, request):
         "task": "load",
         "response": {
             "code" : 200,
-            "body" : "Signed in"
+            "body" : "Signed in",
+            "nickname" : temp[0],
+            "tic_score" : temp[3],
+            "rps_score" : temp[4],
             }
         }
         await loop.sock_sendall(conn, bytes(json.dumps(response), encoding="utf-8"))

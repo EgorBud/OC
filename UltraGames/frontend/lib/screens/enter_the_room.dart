@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:frontend/locator.dart';
 import 'package:frontend/providers/key_provider.dart';
 import 'package:frontend/providers/socket_provider.dart';
-import 'package:frontend/screens/waiting_room.dart';
 import 'package:frontend/services/navigation_service.dart';
 import 'package:provider/provider.dart';
 
