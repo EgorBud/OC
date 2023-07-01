@@ -240,6 +240,12 @@ class SocketProvider extends ChangeNotifier {
         } else if (_serverResponse["task"] == "start_rps") {
           gameStart = true;
           firstPlayer = _serverResponse["first_player"];
+          if (firstPlayer == true) {
+            myToken = "X";
+          } else {
+            myToken = "O";
+          }
+
           notifyListeners();
           navigationService.navigateToAndRemove(ScisorsScreen.routeName);
         } else if (_serverResponse["task"] == "get") {
