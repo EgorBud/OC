@@ -1,4 +1,5 @@
 import 'package:frontend/locator.dart';
+import 'package:frontend/screens/scisors.dart';
 import 'package:frontend/services/navigation_service.dart';
 import 'package:provider/provider.dart';
 

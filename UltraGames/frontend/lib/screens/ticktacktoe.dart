@@ -76,6 +76,7 @@ class _TickTackToeScreenState extends State<TickTackToeScreen> {
                           "task": "game",
                           "request": {
                             "move": index,
+                            "login" : socketWatch.login,
                           }
                         };
 

@@ -119,6 +119,7 @@ class _SignFormState extends State<SignInScreen> {
                       onPressed: () {
                         logAndRegRead.setLogin(loginTextEditingController.text);
                         socketRead.setContext(context);
+                        socketRead.setLogin(loginTextEditingController.text);
 
                         bool loginEmpty = true;
                         bool passwordEmpty = true;
